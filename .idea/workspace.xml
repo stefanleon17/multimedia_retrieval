@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9690eee5-235f-4bf8-930a-25863c40cb41" name="Changes" comment="Added PyOpenGL acceleration for faster processing down the line.">
-      <change afterPath="$PROJECT_DIR$/obj_viewer.py" afterDir="false" />
+    <list default="true" id="9690eee5-235f-4bf8-930a-25863c40cb41" name="Changes" comment="Added .obj file loader.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj_viewer.py" beforeDir="false" afterPath="$PROJECT_DIR$/obj_viewer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,22 +33,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.python -m pip install -r requirements.txt.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;python.packages.toolwindow.project.migrated.to.right.top.v2&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;Console&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.main.executor": "Run",
+    "Python.python -m pip install -r requirements.txt.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "node.js.detected.package.jshint": "true",
+    "node.js.selected.package.jshint": "",
+    "nodejs_package_manager_path": "npm",
+    "python.packages.toolwindow.project.migrated.to.right.top.v2": "true",
+    "settings.editor.selected.configurable": "Console"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="python -m pip install -r requirements.txt" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="multimedia_retrieval" />
@@ -95,7 +97,7 @@
       <option name="presentableId" value="Default" />
       <updated>1789049768074</updated>
       <workItem from="1789636799714" duration="950000" />
-      <workItem from="1789818881336" duration="4729000" />
+      <workItem from="1789818881336" duration="10916000" />
     </task>
     <task id="LOCAL-00001" summary="Added PyOpenGL acceleration for faster processing down the line.">
       <option name="closed" value="true" />
@@ -105,7 +107,15 @@
       <option name="project" value="LOCAL" />
       <updated>1789819323776</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Added .obj file loader.">
+      <option name="closed" value="true" />
+      <created>1789824351545</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1789824351545</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -125,6 +135,11 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Added PyOpenGL acceleration for faster processing down the line." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added PyOpenGL acceleration for faster processing down the line." />
+    <MESSAGE value="Added .obj file loader." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added .obj file loader." />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Multimedia_Retrieval$python__m_pip_install__r_requirements_txt.coverage" NAME="python -m pip install -r requirements.txt Coverage Results" MODIFIED="1789831653847" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Multimedia_Retrieval$main.coverage" NAME="main Coverage Results" MODIFIED="1789832525202" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
