@@ -1,4 +1,6 @@
-import sys
+##############################
+# Code for loading and drawing an (.obj) 3D object.
+###############################
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -36,6 +38,7 @@ def load_obj(filename):
 def view(width, height, V, VN, F):
 
     # Perspective & viweport parameters
+    # Horrible magic numbers, needs looking over
     lo = [min(v[i] for v in V) for i in range(3)]
     hi = [max(v[i] for v in V) for i in range(3)]
     center = tuple((lo[i] + hi[i]) * 0.5 for i in range(3))
@@ -64,6 +67,7 @@ def view(width, height, V, VN, F):
 def display(filename, width, height):
     V, VN, F = load_obj(filename)
 
+    # Function defined here for compatibility with gluDisplayFunc()
     def draw():
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
