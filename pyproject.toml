@@ -7,3 +7,6 @@ dependencies = [
     "PyOpenGL>=3.1.10",
     "PyOpenGL_accelerate>=3.1.10"
 ]
+
+[tool.setuptools]
+py-modules = ["main", "obj_viewer"]
