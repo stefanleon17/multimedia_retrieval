@@ -2,6 +2,8 @@
 # Code for loading and drawing an (.obj) 3D object.
 ###############################
 
+import sys
+
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
@@ -48,7 +50,7 @@ def view(width, height, V, VN, F):
     eye = (center[0] + distance, center[1] + distance, center[2] + distance)
     up_x, up_y, up_z = 0, 0.5, 0
 
-    fov = 100
+    fov = 50
     near = distance * 0.01
     far = distance + radius * 10
     aspect = float(width) / float(height)
@@ -63,13 +65,43 @@ def view(width, height, V, VN, F):
 
     glViewport(0, 0, width, height)
 
+    return center, radius
+
 
 def display(filename, width, height):
     V, VN, F = load_obj(filename)
 
+    lo = [min(v[i] for v in V) for i in range(3)]
+    hi = [max(v[i] for v in V) for i in range(3)]
+
+    center = tuple((lo[i] + hi[i]) * 0.5 for i in range(3))
+    radius = max(max(hi[i] - lo[i] for i in range(3)) * 0.5, 1e-6)
+
+    # for mouse interaction
+    rot_x, rot_y = 0, 0
+    pan_x, pan_y = 0, 0
+    zoom = radius * 3.0
+    last_x, last_y = 0, 0
+    active_button = None
+
     # Function defined here for compatibility with gluDisplayFunc()
     def draw():
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+
+        glTranslatef(pan_x, pan_y, -zoom)
+
+        glRotatef(rot_x, 1, 0, 0)
+        glRotatef(rot_y, 0, 1, 0)
+
+        glTranslatef(
+            -center[0],
+            -center[1],
+            -center[2]
+        )
+
 
         for face in F:
             glBegin(GL_POLYGON)
@@ -80,6 +112,63 @@ def display(filename, width, height):
             glEnd()
 
         glutSwapBuffers()
+
+    def mouse(button, state, x, y):
+        nonlocal active_button
+        nonlocal last_x, last_y, zoom
+        last_x, last_y = x, y
+
+        if state == GLUT_DOWN:
+
+            if button == 3:
+                zoom *= 0.9             #zoom in
+                glutPostRedisplay()
+                return
+            elif button == 4:
+                zoom *= 1.1             #zoom out
+                glutPostRedisplay()
+                return
+
+            active_button = button
+        else: active_button = None
+
+    def motion(x, y):
+
+        nonlocal last_x, last_y
+        nonlocal rot_x, rot_y
+        nonlocal pan_x, pan_y
+
+        dx = x - last_x
+        dy = y - last_y
+
+        # Left drag = rotate
+        if active_button == GLUT_LEFT_BUTTON:
+            rot_y += dx * 0.5
+            rot_x += dy * 0.5
+
+        # Right drag = pan
+        elif active_button == GLUT_RIGHT_BUTTON:
+
+            pan_speed = radius * 0.002
+
+            pan_x += dx * pan_speed
+            pan_y -= dy * pan_speed
+
+        last_x = x
+        last_y = y
+
+        glutPostRedisplay()
+
+    def keyboard(key, x, y):        # zoom in/out with keyboard, because scroll func didnt work on mac, idk
+        nonlocal zoom
+
+        if key in (b'+', b'='):
+            zoom *= 0.9
+
+        elif key == b'-':
+            zoom *= 1.1
+
+        glutPostRedisplay()
 
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
@@ -100,6 +189,9 @@ def display(filename, width, height):
     view(width, height, V, VN, F)
 
     glutDisplayFunc(draw)
+    glutMouseFunc(mouse)
+    glutMotionFunc(motion)
+    glutKeyboardFunc(keyboard)
     glutMainLoop()
 
 
