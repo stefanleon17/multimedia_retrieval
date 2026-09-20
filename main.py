@@ -1,7 +1,7 @@
 from obj_viewer import display
 
 def main():
-    filename = r"C:\Users\stefa\Desktop\School\Masters\Multimedia Retrieval\m1580.obj"
+    filename = r"../ShapeDatabase/Car/m1487.obj"
     width, height = 900, 700
     display(filename, width, height)
 
