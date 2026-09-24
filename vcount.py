@@ -2,7 +2,7 @@ import os
 import csv
 from collections import Counter
 
-dataset_folder = "../ShapeDatabase/"
+dataset_folder = "./ShapeDatabase/"
 output_csv = "obj_analysis.csv"
 
 results = []
@@ -101,7 +101,6 @@ for class_name in os.listdir(dataset_folder):
 results.sort(
     key=lambda x: (x[0].lower(), x[1].lower())
 )
-
 
 with open(
     output_csv,
