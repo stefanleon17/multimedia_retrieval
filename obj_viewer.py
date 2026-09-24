@@ -1,5 +1,5 @@
 ##############################
-# Code for loading and drawing an (.obj) 3D object.
+# Code for drawing an (.obj) 3D object.
 ###############################
 
 import sys
@@ -8,34 +8,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-def load_obj(filename):
-    V = []
-    VN = []
-    F = []
-
-    for line in open(filename):
-        data = line.split()
-        if not data or data[0] == '#':
-            continue
-        if data[0] == 'v':
-            V.append(tuple(float(i) for i in data[1:4]))
-        elif data[0] == 'vn':
-            VN.append(tuple(float(i) for i in data[1:4]))
-        elif data[0] == 'f':
-            face = []
-            for token in data[1:]:
-                if '/' in token:
-                    t = token.split("/")
-                    v = int(t[0]) - 1           # iterating from 0 instead of 1
-                    # texture = int(t[1]) -1    # Empty, I hope
-                    vn = int(t[2]) - 1          # iterating from 0 instead of 1
-                    face.append((v, vn))
-                else:
-                    v = int(token) - 1          # iterating from 0 instead of 1
-                    face.append((v, None))
-            F.append(face)
-
-    return V, VN, F
+from obj_loader import load_obj
 
 def view(width, height, V, VN, F):
 
@@ -69,7 +42,7 @@ def view(width, height, V, VN, F):
 
 
 def display(filename, width, height):
-    V, VN, F = load_obj(filename)
+    V, VN, F, num_vertices, num_faces = load_obj(filename)
 
     lo = [min(v[i] for v in V) for i in range(3)]
     hi = [max(v[i] for v in V) for i in range(3)]
@@ -110,6 +83,37 @@ def display(filename, width, height):
                     glNormal3f(*VN[vn])
                 glVertex3f(*V[v])
             glEnd()
+
+        def draw_text(x, y, text):
+            glMatrixMode(GL_PROJECTION)
+            glPushMatrix()
+            glLoadIdentity()
+            glOrtho(0, width, 0, height, -1, 1)
+
+            glMatrixMode(GL_MODELVIEW)
+            glPushMatrix()
+            glLoadIdentity()
+
+            glDisable(GL_LIGHTING)
+            glDisable(GL_DEPTH_TEST)
+
+            glColor3f(1.0, 1.0, 1.0)
+            glRasterPos2f(x, y)
+            for ch in text:
+                glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
+
+            if VN:
+                glEnable(GL_LIGHTING)
+            glEnable(GL_DEPTH_TEST)
+
+            glMatrixMode(GL_PROJECTION)
+            glPopMatrix()
+            glMatrixMode(GL_MODELVIEW)
+            glPopMatrix()
+
+        # call at the end of draw(), before glutSwapBuffers()
+        draw_text(width - 150, 40, f"Vertices: {num_vertices}")
+        draw_text(width - 150, 20, f"Faces: {num_faces}")
 
         glutSwapBuffers()
 
