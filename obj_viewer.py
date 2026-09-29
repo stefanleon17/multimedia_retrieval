@@ -111,7 +111,6 @@ def display(filename, width, height):
             glMatrixMode(GL_MODELVIEW)
             glPopMatrix()
 
-        # call at the end of draw(), before glutSwapBuffers()
         draw_text(width - 150, 40, f"Vertices: {num_vertices}")
         draw_text(width - 150, 20, f"Faces: {num_faces}")
 
