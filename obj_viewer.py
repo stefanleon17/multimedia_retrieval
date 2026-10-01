@@ -8,7 +8,8 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
-from obj_loader import load_obj
+from shape import Shape
+from obj_resampler import resample
 
 def view(width, height, V, VN, F):
 
@@ -42,10 +43,9 @@ def view(width, height, V, VN, F):
 
 
 def display(filename, width, height):
-    V, VN, F, num_vertices, num_faces = load_obj(filename)
-
-    lo = [min(v[i] for v in V) for i in range(3)]
-    hi = [max(v[i] for v in V) for i in range(3)]
+    shape = Shape(filename)
+    lo = [min(v[i] for v in shape.V) for i in range(3)]
+    hi = [max(v[i] for v in shape.V) for i in range(3)]
 
     center = tuple((lo[i] + hi[i]) * 0.5 for i in range(3))
     radius = max(max(hi[i] - lo[i] for i in range(3)) * 0.5, 1e-6)
@@ -76,12 +76,12 @@ def display(filename, width, height):
         )
 
 
-        for face in F:
+        for face in shape.F:
             glBegin(GL_POLYGON)
             for v, vn in face:
                 if vn is not None:
-                    glNormal3f(*VN[vn])
-                glVertex3f(*V[v])
+                    glNormal3f(*shape.VN[vn])
+                glVertex3f(*shape.V[v])
             glEnd()
 
         def draw_text(x, y, text):
@@ -102,7 +102,7 @@ def display(filename, width, height):
             for ch in text:
                 glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
 
-            if VN:
+            if shape.VN:
                 glEnable(GL_LIGHTING)
             glEnable(GL_DEPTH_TEST)
 
@@ -111,8 +111,8 @@ def display(filename, width, height):
             glMatrixMode(GL_MODELVIEW)
             glPopMatrix()
 
-        draw_text(width - 150, 40, f"Vertices: {num_vertices}")
-        draw_text(width - 150, 20, f"Faces: {num_faces}")
+        draw_text(width - 150, 40, f"Vertices: {shape.num_vertices}")
+        draw_text(width - 150, 20, f"Faces: {shape.num_faces}")
 
         glutSwapBuffers()
 
@@ -163,13 +163,17 @@ def display(filename, width, height):
         glutPostRedisplay()
 
     def keyboard(key, x, y):        # zoom in/out with keyboard, because scroll func didnt work on mac, idk
-        nonlocal zoom
+        nonlocal zoom, shape
 
         if key in (b'+', b'='):
             zoom *= 0.9
 
         elif key == b'-':
             zoom *= 1.1
+
+        elif key == b's':
+            new_filename = resample(filename)
+            shape = Shape(new_filename)
 
         glutPostRedisplay()
 
@@ -181,7 +185,7 @@ def display(filename, width, height):
     glEnable(GL_DEPTH_TEST)
     glClearColor(0.16, 0.17, 0.19, 1.0)
     glColor3f(0.75, 0.76, 0.80)
-    if VN:
+    if shape.VN:
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
         glEnable(GL_NORMALIZE)
@@ -189,7 +193,7 @@ def display(filename, width, height):
         glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
         glLightfv(GL_LIGHT0, GL_POSITION, [10.0, 10.0, 10.0, 1.0])
 
-    view(width, height, V, VN, F)
+    view(width, height, shape.V, shape.VN, shape.F)
 
     glutDisplayFunc(draw)
     glutMouseFunc(mouse)
