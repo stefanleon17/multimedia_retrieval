@@ -10,6 +10,30 @@ from OpenGL.GLUT import *
 
 from shape import Shape
 from obj_resampler import resample
+from obj_normalization import flip
+
+def draw_axes(length=1.0):
+    glLineWidth(2.0)
+
+    glBegin(GL_LINES)
+
+    # X = red
+    glColor3f(1.0, 0.0, 0.0)
+    glVertex3f(0.0, 0.0, 0.0)
+    glVertex3f(length, 0.0, 0.0)
+
+    # Y = green
+    glColor3f(0.0, 1.0, 0.0)
+    glVertex3f(0.0, 0.0, 0.0)
+    glVertex3f(0.0, length, 0.0)
+
+    # Z = blue
+    glColor3f(0.0, 0.0, 1.0)
+    glVertex3f(0.0, 0.0, 0.0)
+    glVertex3f(0.0, 0.0, length)
+
+    glEnd()
+
 
 def view(width, height, V, VN, F):
 
@@ -44,8 +68,18 @@ def view(width, height, V, VN, F):
 
 def display(filename, width, height):
     shape = Shape(filename)
+
+    original_vertices = shape.V.copy()
+    flipped_vertices = flip(
+        shape.V,
+        shape.F
+    )
+    show_flipped = False
+
     lo = [min(v[i] for v in shape.V) for i in range(3)]
     hi = [max(v[i] for v in shape.V) for i in range(3)]
+
+    size = max(hi[i] - lo[i] for i in range(3))
 
     center = tuple((lo[i] + hi[i]) * 0.5 for i in range(3))
     radius = max(max(hi[i] - lo[i] for i in range(3)) * 0.5, 1e-6)
@@ -75,13 +109,22 @@ def display(filename, width, height):
             -center[2]
         )
 
+        draw_axes(size * 0.75)
+
+        # Return color to the mesh color
+        glColor3f(0.8, 0.8, 0.8)
+
+        vertices = flipped_vertices if show_flipped else original_vertices
 
         for face in shape.F:
             glBegin(GL_POLYGON)
+
             for v, vn in face:
                 if vn is not None:
                     glNormal3f(*shape.VN[vn])
-                glVertex3f(*shape.V[v])
+
+                glVertex3f(*vertices[v])
+
             glEnd()
 
         def draw_text(x, y, text):
@@ -113,6 +156,11 @@ def display(filename, width, height):
 
         draw_text(width - 150, 40, f"Vertices: {shape.num_vertices}")
         draw_text(width - 150, 20, f"Faces: {shape.num_faces}")
+
+        if show_flipped:
+            draw_text(20, height - 30, "after flipping")
+        else:
+            draw_text(20, height - 30, "before flipping")
 
         glutSwapBuffers()
 
@@ -163,7 +211,7 @@ def display(filename, width, height):
         glutPostRedisplay()
 
     def keyboard(key, x, y):        # zoom in/out with keyboard, because scroll func didnt work on mac, idk
-        nonlocal zoom, shape
+        nonlocal zoom, shape, show_flipped
 
         if key in (b'+', b'='):
             zoom *= 0.9
@@ -174,6 +222,9 @@ def display(filename, width, height):
         elif key == b's':
             new_filename = resample(filename)
             shape = Shape(new_filename)
+
+        elif key == b' ':
+            show_flipped = not show_flipped
 
         glutPostRedisplay()
 
