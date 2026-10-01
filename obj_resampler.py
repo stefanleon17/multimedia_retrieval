@@ -1,6 +1,6 @@
 from pathlib import Path
 import pymeshlab
-import numpy as np
+from shape import Shape
 
 TARGET_VERTICES = 10000
 TOLERANCE = 2000
@@ -8,15 +8,6 @@ TOLERANCE = 2000
 def resample(input_path,
                  target=TARGET_VERTICES,
                  tolerance=TOLERANCE):
-    path = Path(input_path)
-    class_name = path.parent.name
-    name = path.name
-
-    output_path = Path("./ResampledShapeDatabase") / class_name / name
-
-    folder = Path("ResampledShapeDatabase") / class_name
-    if not folder.exists():
-        folder.mkdir()
 
     mesh = pymeshlab.MeshSet()
     mesh.load_new_mesh(input_path)
@@ -52,8 +43,7 @@ def resample(input_path,
         mesh.meshing_decimation_quadric_edge_collapse(
             targetfacenum=target_faces,
             preservenormal=True,
-            preservetopology=True,
-            autoclean=False
+            preservetopology=True
         )
         print("Decimated to", target_faces, "faces mesh has", mesh.current_mesh().vertex_number(), "vertex")
         # Refine our estimation to slowly converge to target vertex number
@@ -70,8 +60,7 @@ def resample(input_path,
     #
     # print(mesh.get_topological_measures())
 
-    print(output_path, str(output_path))
-    mesh.save_current_mesh(str(output_path))
-    print(f"{input_path}: {mesh.current_mesh().vertex_number()} vertices")
+    shape = Shape(input_path, mesh)
+    output_path = shape.write()
 
     return output_path
