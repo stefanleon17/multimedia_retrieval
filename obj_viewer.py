@@ -10,6 +10,7 @@ from OpenGL.GLUT import *
 
 from shape import Shape
 from obj_resampler import resample
+from obj_alignment import align
 from obj_normalization import flip
 
 def draw_axes(length=1.0):
@@ -225,6 +226,9 @@ def display(filename, width, height):
 
         elif key == b' ':
             show_flipped = not show_flipped
+
+        elif key == b'a':
+            shape = align(shape)
 
         glutPostRedisplay()
 
