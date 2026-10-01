@@ -23,6 +23,7 @@ def resample(input_path,
 
     # # Clean-up
     mesh.meshing_remove_duplicate_vertices()
+    mesh.meshing_remove_duplicate_faces()
     mesh.meshing_remove_unreferenced_vertices()
     mesh.meshing_repair_non_manifold_edges(method='Split Vertices')
     mesh.meshing_repair_non_manifold_vertices()
@@ -74,4 +75,3 @@ def resample(input_path,
     print(f"{input_path}: {mesh.current_mesh().vertex_number()} vertices")
 
     return output_path
-
