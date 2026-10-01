@@ -10,6 +10,7 @@ from OpenGL.GLUT import *
 
 from shape import Shape
 from obj_resampler import resample
+from obj_alignment import align
 
 def view(width, height, V, VN, F):
 
@@ -174,6 +175,9 @@ def display(filename, width, height):
         elif key == b's':
             new_filename = resample(filename)
             shape = Shape(new_filename)
+
+        elif key == b'a':
+            shape = align(shape)
 
         glutPostRedisplay()
 
