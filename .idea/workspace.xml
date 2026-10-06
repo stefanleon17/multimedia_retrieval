@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9690eee5-235f-4bf8-930a-25863c40cb41" name="Changes" comment="Added .obj file loader.">
+      <change afterPath="$PROJECT_DIR$/obj_triangle_orientation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -29,12 +30,12 @@
     &quot;assignee&quot;: &quot;stefanleon17&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/stefanleon17/multimedia_retrieval.git",
-    "accountId": "4ce8e8ca-2449-4541-9adf-68dc0c3350ad"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/stefanleon17/multimedia_retrieval.git&quot;,
+    &quot;accountId&quot;: &quot;4ce8e8ca-2449-4541-9adf-68dc0c3350ad&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2,
   &quot;fromUser&quot;: false
@@ -48,6 +49,7 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Python.main.executor": "Run",
+    "Python.obj_triangle_orientation.executor": "Run",
     "Python.obj_viewer.executor": "Run",
     "Python.python -m pip install -r requirements.txt.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -55,6 +57,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "main",
+    "git.auto.fetch.suggestion.counter": "1",
     "ignore.virus.scanning.warn.message": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.jshint": "true",
@@ -120,7 +123,15 @@
       <option name="project" value="LOCAL" />
       <updated>1790676275872</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Added .obj file loader.">
+      <option name="closed" value="true" />
+      <created>1791284130814</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1791284130814</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
