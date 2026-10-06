@@ -124,7 +124,7 @@ def display(filename, width, height):
                 if vn is not None:
                     glNormal3f(*shape.VN[vn])
 
-                glVertex3f(*vertices[v])
+                glVertex3f(*shape.V[v])
 
             glEnd()
 

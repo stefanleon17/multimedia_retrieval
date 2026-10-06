@@ -22,7 +22,7 @@ def resample(input_path,
 
     # Subdivide until we have more than 10,000 vertices
     while mesh.current_mesh().vertex_number() < (target - tolerance):
-        mesh.meshing_surface_subdivision_midpoint(iterations=1)
+        mesh.meshing_surface_subdivision_ls3_loop(iterations=1)
 
     ### DEBUG
     # m = mesh.current_mesh()

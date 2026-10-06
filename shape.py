@@ -1,5 +1,6 @@
 from pathlib import Path
 import pymeshlab
+import numpy as np
 
 class Shape:
     def __init__(self, filename, mesh_set = None):
@@ -55,18 +56,13 @@ class Shape:
         output_path = Path("ResampledShapeDatabase") / path.parent.name / path.name
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_path, "w") as f:
-            for x, y, z in self.V:
-                f.write(f"v {x} {y} {z}\n")
-            for x, y, z in self.VN:
-                f.write(f"vn {x} {y} {z}\n")
-            for face in self.F:
-                tokens = []
-                for v, vn in face:
-                    if vn is None:
-                        tokens.append(f"{v + 1}")           # back to 1-based
-                    else:
-                        tokens.append(f"{v + 1}//{vn + 1}")
-                f.write("f " + " ".join(tokens) + "\n")
+        vertices = np.array(self.V, dtype=np.float64)
+        faces = np.array([[corner[0] for corner in face] for face in self.F], dtype=np.int32)
+
+        self.mesh.clear()
+        self.mesh.add_mesh(pymeshlab.Mesh(vertex_matrix=vertices, face_matrix=faces))
+        self.mesh.compute_normal_per_vertex()  # rebuild normals for the new geometry
+
+        self.mesh.save_current_mesh(str(output_path), save_vertex_normal=True)
 
         return output_path
