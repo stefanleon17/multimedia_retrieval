@@ -163,7 +163,7 @@ def orient_shape(shape):
 if __name__ == "__main__":
 
     # Change this to one OBJ from your ShapeDatabase
-    filename = r"ShapeDatabase\Apartment\D00310.obj"
+    filename = r"../ShapeDatabase/Apartment/D00310.obj"
 
     shape = Shape(filename)
 

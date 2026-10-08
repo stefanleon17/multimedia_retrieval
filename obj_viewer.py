@@ -2,18 +2,16 @@
 # Code for drawing an (.obj) 3D object.
 ###############################
 
-import sys
-
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 from shape import Shape
-from obj_resampler import resample
-from obj_alignment import align
-from obj_normalization import flip
-from obj_normalization import scale
-from obj_hole_filling import fill_holes
+from Preprocessing.obj_resampler import resample
+from Preprocessing.obj_alignment import align
+from Preprocessing.obj_normalization import flip
+from Preprocessing.obj_normalization import scale
+from Preprocessing.obj_hole_filling import fill_holes
 
 def draw_axes(length=1.0):
     glLineWidth(2.0)

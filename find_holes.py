@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from shape import Shape
-from obj_hole_filling import get_boundary_edges
+from Preprocessing.obj_hole_filling import get_boundary_edges
 
 
 DATABASE_PATH = Path("ShapeDatabase")

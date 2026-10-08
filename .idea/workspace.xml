@@ -4,11 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9690eee5-235f-4bf8-930a-25863c40cb41" name="Changes" comment="added triangle orientation">
+    <list default="true" id="9690eee5-235f-4bf8-930a-25863c40cb41" name="Changes" comment="added a script that finds shapes with holes">
+      <change afterPath="$PROJECT_DIR$/FeatureExtraction/obj_volume_calculation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj_hole_filling.py" beforeDir="false" afterPath="$PROJECT_DIR$/obj_hole_filling.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj_triangle_orientation.py" beforeDir="false" afterPath="$PROJECT_DIR$/obj_triangle_orientation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/find_holes.py" beforeDir="false" afterPath="$PROJECT_DIR$/find_holes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj_alignment.py" beforeDir="false" afterPath="$PROJECT_DIR$/Preprocessing/obj_alignment.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj_hole_filling.py" beforeDir="false" afterPath="$PROJECT_DIR$/Preprocessing/obj_hole_filling.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj_normalization.py" beforeDir="false" afterPath="$PROJECT_DIR$/Preprocessing/obj_normalization.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj_resampler.py" beforeDir="false" afterPath="$PROJECT_DIR$/Preprocessing/obj_resampler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj_triangle_orientation.py" beforeDir="false" afterPath="$PROJECT_DIR$/Preprocessing/obj_triangle_orientation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/obj_viewer.py" beforeDir="false" afterPath="$PROJECT_DIR$/obj_viewer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -48,33 +52,38 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.find_holes.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.obj_hole_filling.executor": "Run",
-    "Python.obj_triangle_orientation.executor": "Run",
-    "Python.obj_viewer.executor": "Run",
-    "Python.python -m pip install -r requirements.txt.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
-    "git.auto.fetch.suggestion.counter": "1",
-    "ignore.virus.scanning.warn.message": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.jshint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.jshint": "",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "python.packages.toolwindow.project.migrated.to.right.top.v2": "true",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.find_holes.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.obj_hole_filling.executor&quot;: &quot;Run&quot;,
+    &quot;Python.obj_triangle_orientation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.obj_viewer.executor&quot;: &quot;Run&quot;,
+    &quot;Python.python -m pip install -r requirements.txt.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git.auto.fetch.suggestion.counter&quot;: &quot;1&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;python.packages.toolwindow.project.migrated.to.right.top.v2&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Lucas\PycharmProjects\multimedia_retrieval\Preprocessing" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -152,7 +161,23 @@
       <option name="project" value="LOCAL" />
       <updated>1791464888193</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="added workspace to gitignore">
+      <option name="closed" value="true" />
+      <created>1791470360072</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1791470360072</updated>
+    </task>
+    <task id="LOCAL-00009" summary="added a script that finds shapes with holes">
+      <option name="closed" value="true" />
+      <created>1791470403572</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1791470403572</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -175,7 +200,9 @@
     <MESSAGE value="Added comments." />
     <MESSAGE value="Added .obj file loader." />
     <MESSAGE value="added triangle orientation" />
-    <option name="LAST_COMMIT_MESSAGE" value="added triangle orientation" />
+    <MESSAGE value="added workspace to gitignore" />
+    <MESSAGE value="added a script that finds shapes with holes" />
+    <option name="LAST_COMMIT_MESSAGE" value="added a script that finds shapes with holes" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Multimedia_Retrieval$python__m_pip_install__r_requirements_txt.coverage" NAME="python -m pip install -r requirements.txt Coverage Results" MODIFIED="1789834262088" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

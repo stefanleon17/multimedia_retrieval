@@ -264,7 +264,7 @@ if __name__ == "__main__":
     # Change this to the OBJ you want to test
     # -------------------------------------------------------------
 
-    filename = r"ShapeDatabase\AircraftBuoyant\m1337.obj"
+    filename = r"../ShapeDatabase/AircraftBuoyant/m1337.obj"
 
     shape = Shape(filename)
 
