@@ -12,6 +12,7 @@ from shape import Shape
 from obj_resampler import resample
 from obj_alignment import align
 from obj_normalization import flip
+from obj_normalization import scale
 
 def draw_axes(length=1.0):
     glLineWidth(2.0)
@@ -125,6 +126,7 @@ def display(filename, width, height):
                     glNormal3f(*shape.VN[vn])
 
                 glVertex3f(*shape.V[v])
+                # glVertex3f(*vertices[v]) # check flip
 
             glEnd()
 
@@ -224,11 +226,14 @@ def display(filename, width, height):
             new_filename = resample(filename)
             shape = Shape(new_filename)
 
-        elif key == b' ':
+        elif key == b'f':
             show_flipped = not show_flipped
 
         elif key == b'a':
             shape = align(shape)
+
+        elif key == b'c':
+            scale(shape.V)
 
         glutPostRedisplay()
 
