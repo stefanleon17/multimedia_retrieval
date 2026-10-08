@@ -1,7 +1,6 @@
 from collections import defaultdict
 from shape import Shape
 
-
 def edge_key(v1, v2):
     """
     An undirected edge.
@@ -265,7 +264,7 @@ if __name__ == "__main__":
     # Change this to the OBJ you want to test
     # -------------------------------------------------------------
 
-    filename = r"ShapeDatabase/Car/m1487.obj"
+    filename = r"ShapeDatabase\AircraftBuoyant\m1337.obj"
 
     shape = Shape(filename)
 
@@ -274,3 +273,4 @@ if __name__ == "__main__":
     shape = fill_holes(shape)
 
     print(f"Final number of triangles: {shape.num_faces}")
+

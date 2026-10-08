@@ -77,85 +77,85 @@ def get_shared_edge_direction(face, edge):
 
 
 def orient_shape(shape):
-    """
-    Orient all triangles consistently.
-
-    A random triangle is chosen as the starting triangle and
-    considered correctly oriented. Orientation is then propagated
-    through neighbouring triangles.
-
-    The mesh geometry (shape.V) is not changed. Only the ordering
-    of vertices in shape.F is changed.
-    """
-
     if not shape.F:
         return shape
 
-    # Build edge -> face lookup
     edge_to_faces = build_edge_lookup(shape)
 
-    # Pick a random starting triangle
-    start_face = random.randrange(len(shape.F))
+    # Triangles that have already been oriented/marked
+    oriented = set()
 
-    # Keep track of triangles whose orientation has been fixed
-    oriented = {start_face}
+    while len(oriented) < len(shape.F):
 
-    # Triangles that still need to be processed
-    queue = [start_face]
-
-    while queue:
-
-        current_index = queue.pop(0)
-        current_face = shape.F[current_index]
-
-        current_vertices = [corner[0] for corner in current_face]
-
-        # The three directed edges of the current triangle
-        current_edges = [
-            (current_vertices[0], current_vertices[1]),
-            (current_vertices[1], current_vertices[2]),
-            (current_vertices[2], current_vertices[0])
+        # Find an unmarked triangle to start the next connected component
+        remaining_faces = [
+            i for i in range(len(shape.F))
+            if i not in oriented
         ]
 
-        for edge in current_edges:
+        start_face = random.choice(remaining_faces)
 
-            # Find all triangles sharing this edge
-            neighbouring_faces = edge_to_faces[edge_key(*edge)]
+        print(
+            f"Starting new connected component at triangle "
+            f"{start_face}"
+        )
 
-            for neighbour_index in neighbouring_faces:
+        # Mark this triangle as correctly oriented.
+        # We don't change its orientation; it simply becomes
+        # the reference orientation for this component.
+        oriented.add(start_face)
 
-                # Don't process the current triangle or an already
-                # oriented triangle.
-                if neighbour_index == current_index:
-                    continue
+        queue = [start_face]
 
-                if neighbour_index in oriented:
-                    continue
+        while queue:
 
-                neighbour_face = shape.F[neighbour_index]
+            current_index = queue.pop(0)
+            current_face = shape.F[current_index]
 
-                # Determine how the neighbour traverses the shared edge
-                neighbour_direction = get_shared_edge_direction(
-                    neighbour_face,
-                    edge
-                )
+            current_vertices = [
+                corner[0] for corner in current_face
+            ]
 
-                # Correct orientation requires opposite directions
-                #
-                # Current:   a -> b
-                # Correct neighbour: b -> a
-                #
-                # If neighbour also has a -> b, it must be flipped.
-                if neighbour_direction == edge:
-                    shape.F[neighbour_index] = reverse_face(
-                        neighbour_face
+            current_edges = [
+                (current_vertices[0], current_vertices[1]),
+                (current_vertices[1], current_vertices[2]),
+                (current_vertices[2], current_vertices[0])
+            ]
+
+            for edge in current_edges:
+
+                neighbouring_faces = edge_to_faces[
+                    edge_key(*edge)
+                ]
+
+                for neighbour_index in neighbouring_faces:
+
+                    if neighbour_index == current_index:
+                        continue
+
+                    # Already processed this triangle
+                    if neighbour_index in oriented:
+                        continue
+
+                    neighbour_face = shape.F[neighbour_index]
+
+                    neighbour_direction = get_shared_edge_direction(
+                        neighbour_face,
+                        edge
                     )
 
-                # Mark the neighbour as oriented
-                oriented.add(neighbour_index)
+                    # Both triangles currently traverse the shared
+                    # edge in the same direction, so the neighbour
+                    # needs to be flipped.
+                    if neighbour_direction == edge:
+                        shape.F[neighbour_index] = reverse_face(
+                            neighbour_face
+                        )
 
-                # Process its neighbours later
-                queue.append(neighbour_index)
+                    oriented.add(neighbour_index)
+                    queue.append(neighbour_index)
+
+    print(f"All {len(oriented)} triangles have been oriented.")
 
     return shape
 
@@ -163,7 +163,7 @@ def orient_shape(shape):
 if __name__ == "__main__":
 
     # Change this to one OBJ from your ShapeDatabase
-    filename = r"ShapeDatabase/Car/m1487.obj"
+    filename = r"ShapeDatabase\Apartment\D00310.obj"
 
     shape = Shape(filename)
 
@@ -174,6 +174,6 @@ if __name__ == "__main__":
     print("Orientation finished.")
 
     # Shape.write() saves to ResampledShapeDatabase/
-    output_path = shape.write()
+    #output_path = shape.write()
 
-    print(f"Saved oriented mesh to: {output_path}")
+    #print(f"Saved oriented mesh to: {output_path}")

@@ -13,6 +13,7 @@ from obj_resampler import resample
 from obj_alignment import align
 from obj_normalization import flip
 from obj_normalization import scale
+from obj_hole_filling import fill_holes
 
 def draw_axes(length=1.0):
     glLineWidth(2.0)
@@ -234,6 +235,9 @@ def display(filename, width, height):
 
         elif key == b'c':
             scale(shape.V)
+        elif key == b'h':
+            shape = fill_holes(shape)
+
 
         glutPostRedisplay()
 
