@@ -25,7 +25,21 @@ def align(shape):
 
     # Translation
     translated = V - barycenter
-    shape.V = [tuple(v) for v in translated]
+
+    # Eigenvector alignment (area-weighted covariance of face centers)
+    centers = center_points - barycenter
+    cov = (areas.reshape(-1,1) * centers).T @ centers / areas.sum()
+    evals, evecs = np.linalg.eigh(cov)
+
+    # Sort axes by decreasing eigenvalue (align largest with x)
+    evecs = evecs[:, np.argsort(evals)[::-1]]
+
+    # Keep a proper rotation
+    if np.linalg.det(evecs) < 0:
+        evecs[:, 2] *= -1
+
+    rotated = translated @ evecs
+    shape.V = [tuple(v) for v in rotated]
 
     return shape
 
