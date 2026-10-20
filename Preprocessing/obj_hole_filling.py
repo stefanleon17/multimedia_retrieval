@@ -160,14 +160,11 @@ def fill_holes(shape):
 
     # No holes / no boundary edges
     if not boundary_edges:
-        print("No holes found.")
         return shape
 
-    print(f"Found {len(boundary_edges)} boundary edges.")
 
     loops = find_boundary_loops(boundary_edges)
 
-    print(f"Found {len(loops)} hole(s).")
 
     for loop_index, loop in enumerate(loops):
 
@@ -250,10 +247,6 @@ def fill_holes(shape):
             shape.F.append(new_face)
             shape.num_faces += 1
 
-        print(
-            f"Filled hole {loop_index + 1}: "
-            f"{len(loop)} new triangles."
-        )
 
     return shape
 

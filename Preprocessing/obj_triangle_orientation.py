@@ -93,12 +93,7 @@ def orient_shape(shape):
             if i not in oriented
         ]
 
-        start_face = random.choice(remaining_faces)
-
-        print(
-            f"Starting new connected component at triangle "
-            f"{start_face}"
-        )
+        start_face = remaining_faces[0]
 
         # Mark this triangle as correctly oriented.
         # We don't change its orientation; it simply becomes
@@ -155,7 +150,6 @@ def orient_shape(shape):
                     oriented.add(neighbour_index)
                     queue.append(neighbour_index)
 
-    print(f"All {len(oriented)} triangles have been oriented.")
 
     return shape
 
@@ -167,11 +161,9 @@ if __name__ == "__main__":
 
     shape = Shape(filename)
 
-    print(f"Loaded {shape.num_faces} triangles.")
 
     shape = orient_shape(shape)
 
-    print("Orientation finished.")
 
     # Shape.write() saves to ResampledShapeDatabase/
     #output_path = shape.write()

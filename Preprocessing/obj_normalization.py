@@ -51,35 +51,22 @@ def flip(vertices, faces):
 
     return [tuple(v) for v in flipped]
 
-def scale(vertices):
+def scale(vertices, eps=1e-12):
     vertices = np.array(vertices, dtype=float)
 
-    # Before scaling
+    if vertices.size == 0:
+        return vertices
+
     minimum = np.min(vertices, axis=0)
     maximum = np.max(vertices, axis=0)
-
     dimensions = maximum - minimum
-    largest_dimension = np.max(dimensions)
+    largest_dimension = float(np.max(dimensions))
 
-    print("Before scaling:")
-    print("X size:", dimensions[0])
-    print("Y size:", dimensions[1])
-    print("Z size:", dimensions[2])
-    print("Largest dimension:", largest_dimension)
+    if largest_dimension < eps:
+        # Degenerate shape (all vertices coincide, or the file loaded wrong).
+        # Return an unmodified copy so downstream code never sees inf/NaN.
+        print(f"WARNING: scale(): largest dimension {largest_dimension} "
+              f"< {eps}, skipping scaling.")
+        return vertices
 
-    # Scale
-    scaled = vertices / largest_dimension
-
-    # After scaling
-    minimum_after = np.min(scaled, axis=0)
-    maximum_after = np.max(scaled, axis=0)
-
-    dimensions_after = maximum_after - minimum_after
-
-    print("\nAfter scaling:")
-    print("X size:", dimensions_after[0])
-    print("Y size:", dimensions_after[1])
-    print("Z size:", dimensions_after[2])
-    print("Largest dimension:", np.max(dimensions_after))
-
-    return scaled
+    return vertices / largest_dimension
