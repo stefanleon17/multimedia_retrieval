@@ -184,6 +184,13 @@ def calculate_total_volume(shape):
 
     return total_volume
 
+def get_volume(shape):
+    """ Volume getter. Read-only, does not modify the shape or print anything. """
+    origin = np.zeros(3)
+    return sum(
+        abs(calculate_component_volume(shape, component, origin))
+        for component in get_connected_components(shape)
+    )
 
 if __name__ == "__main__":
 
