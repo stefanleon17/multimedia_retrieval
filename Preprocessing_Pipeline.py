@@ -224,6 +224,11 @@ def format_result(rel_path, report):
     if not failures:
         return f"{rel_path} — PASSED"
     detail = "; ".join(f"{name} ({msg})" for name, msg in failures)
+
+    report_file = PROJECT_ROOT / "report.txt"
+    with open(report_file, "a", encoding="utf-8") as f:
+        f.write(f"{rel_path} — FAILED: {detail}\n")
+
     return f"{rel_path} — FAILED: {detail}"
 
 
