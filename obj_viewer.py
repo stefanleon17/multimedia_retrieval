@@ -92,6 +92,8 @@ def display(filename, width, height):
     last_x, last_y = 0, 0
     active_button = None
 
+    show_wireframe = False
+
     # Function defined here for compatibility with gluDisplayFunc()
     def draw():
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -117,6 +119,10 @@ def display(filename, width, height):
 
         vertices = flipped_vertices if show_flipped else original_vertices
 
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+
+        glColor3f(0.8, 0.8, 0.8)
+
         for face in shape.F:
             glBegin(GL_POLYGON)
 
@@ -128,6 +134,31 @@ def display(filename, width, height):
                 # glVertex3f(*vertices[v]) # check flip
 
             glEnd()
+
+        if show_wireframe:
+
+            # Prevent overlapping surfaces from flickering
+            glEnable(GL_POLYGON_OFFSET_LINE)
+            glPolygonOffset(-1.0, -1.0)
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+
+            # Disable lighting so lines remain visible
+            glDisable(GL_LIGHTING)
+
+            glColor3f(0.05, 0.05, 0.05)
+
+            for face in shape.F:
+                glBegin(GL_TRIANGLES)
+
+                for v, vn in face:
+                    glVertex3f(*vertices[v])
+
+                glEnd()
+
+            # Restore normal OpenGL state
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            glDisable(GL_POLYGON_OFFSET_LINE)
 
         def draw_text(x, y, text):
             glMatrixMode(GL_PROJECTION)
@@ -213,7 +244,7 @@ def display(filename, width, height):
         glutPostRedisplay()
 
     def keyboard(key, x, y):        # zoom in/out with keyboard, because scroll func didnt work on mac, idk
-        nonlocal zoom, shape, show_flipped
+        nonlocal zoom, shape, show_flipped, show_wireframe
 
         if key in (b'+', b'='):
             zoom *= 0.9
@@ -235,6 +266,9 @@ def display(filename, width, height):
             scale(shape.V)
         elif key == b'h':
             shape = fill_holes(shape)
+
+        elif key == b'w':
+            show_wireframe = not show_wireframe
 
 
         glutPostRedisplay()
