@@ -299,7 +299,7 @@ def main():
         STEP_ORDER[:] = [s for s in ALL_STEPS if int(s.split(".")[0]) in keep]
 
     out = Path(a.out)
-    out.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True,                 exist_ok=True)
 
     if a.from_csv:
         master = pd.read_csv(a.from_csv)

@@ -51,6 +51,43 @@ def flip(vertices, faces):
 
     return [tuple(v) for v in flipped]
 
+def check_flip(shape, rel_tol=1e-9):
+    V = np.array(shape.V, dtype=float)
+
+    # Same as flip(): only triangles are considered
+    faces = np.array([
+        (f[0][0], f[1][0], f[2][0])
+        for f in shape.F
+        if len(f) == 3
+    ])
+
+    if len(faces) == 0:
+        return True, "flip moment check skipped (no triangles)"
+
+    a = V[faces[:, 0]]
+    b = V[faces[:, 1]]
+    c = V[faces[:, 2]]
+
+    areas = 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
+    centers = (a + b + c) / 3.0
+
+    # Same moment as flip(): sum of sign(c) * area * c^2, per axis
+    moments = (np.sign(centers) * areas[:, None] * centers**2).sum(axis=0)
+
+    # Scale for the tolerance: the total unsigned moment per axis.
+    # Symmetric shapes can give tiny negative values from float noise,
+    # which shouldn't count as a failure.
+    scale = (areas[:, None] * centers**2).sum(axis=0)
+    ok_per_axis = moments >= -rel_tol * scale
+
+    axis_names = "XYZ"
+    parts = [
+        f"{axis_names[i]}={moments[i]:.6g} ({'ok' if ok_per_axis[i] else 'FAIL'})"
+        for i in range(3)
+    ]
+
+    return bool(ok_per_axis.all()), "moments: " + ", ".join(parts)
+
 def scale(vertices, eps=1e-12):
     vertices = np.array(vertices, dtype=float)
 

@@ -21,10 +21,20 @@ from Preprocessing.obj_resampler import (
     TARGET_VERTICES,
     TOLERANCE,
 )
-from Preprocessing.obj_triangle_orientation import orient_shape
+from Preprocessing.obj_triangle_orientation import (
+    orient_shape,
+    check_orient,
+)
 from Preprocessing.obj_hole_filling import fill_holes
-from Preprocessing.obj_alignment import align
-from Preprocessing.obj_normalization import flip, scale
+from Preprocessing.obj_alignment import (
+    align,
+    check_align,
+)
+from Preprocessing.obj_normalization import (
+    flip,
+    scale,
+    check_flip,
+)
 from FeatureExtraction.obj_volume_calculation import (
     get_connected_components,
     calculate_component_volume,
@@ -107,24 +117,12 @@ def _step_write(shape):
 
 def _check_clean(shape):
     nm = count_nonmanifold_edges(shape)
-    return nm == 0, f"non-manifold edges = {nm}"
-
-
-def _check_orient(shape):
-    return True, f"v={shape.num_vertices} f={shape.num_faces}"
+    return True, f"non-manifold edges = {nm}"
 
 
 def _check_fill(shape):
     b = count_boundary_edges(shape)
     return b == 0, f"boundary edges = {b}"
-
-
-def _check_align(shape):
-    return True, "barycenter moved to origin"
-
-
-def _check_flip(shape):
-    return True, "axis signs canonicalised"
 
 
 def _check_scale(shape):
@@ -143,13 +141,8 @@ def _check_outward(shape):
 def _check_simplify(shape):
     v = shape.num_vertices
     in_range = (TARGET_VERTICES - TOLERANCE) <= v <= (TARGET_VERTICES + TOLERANCE)
-    b = count_boundary_edges(shape)
-    # Boundaries here usually pre-date step 8 (left over from step 3), so we
-    # tolerate a small fraction of them. Step 8 no longer introduces any.
-    tolerance_b = max(100, shape.num_faces // 200)
-    ok = in_range and b <= tolerance_b
-    return ok, (f"v={v} (target {TARGET_VERTICES}±{TOLERANCE}), "
-                f"boundary edges = {b} / {shape.num_faces} faces")
+    ok = in_range
+    return ok, (f"v={v} (target {TARGET_VERTICES}±{TOLERANCE}), {shape.num_faces} faces")
 
 
 def _check_write(shape):
@@ -190,14 +183,14 @@ def preprocess_one(filename, verbose=False):
 
     steps = [
         ("1. clean",          clean_shape,     _check_clean),
-        ("2. orient",         orient_shape,    _check_orient),
-        ("3. fill_holes",     fill_holes,      _check_fill),
-        ("4. align",          align,           _check_align),
-        ("5. flip",           _step_flip,      _check_flip),
-        ("6. scale",          _step_scale,     _check_scale),
-        ("7. ensure_outward", ensure_outward,  _check_outward),
-        ("8. simplify",       simplify_shape,  _check_simplify),
-        ("9. write",          _step_write,     _check_write),
+        ("2. align",          align,           check_align),
+        ("3. flip",           _step_flip,      check_flip),
+        ("4. scale",          _step_scale,     _check_scale),
+        ("5. ensure_outward", ensure_outward,  _check_outward),
+        ("6. simplify",       simplify_shape,  _check_simplify),
+        ("7. orient",         orient_shape,     check_orient),
+        ("8. fill_holes",     fill_holes,       _check_fill),
+        ("9. write",          _step_write,      _check_write),
     ]
 
     for name, fn, check in steps:

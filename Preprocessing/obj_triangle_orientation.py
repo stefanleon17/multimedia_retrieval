@@ -149,9 +149,76 @@ def orient_shape(shape):
 
                     oriented.add(neighbour_index)
                     queue.append(neighbour_index)
-
-
     return shape
+
+def check_orient(shape):
+    if not shape.F:
+        return True, "triangles with wrong orientation=0"
+
+    edge_to_faces = build_edge_lookup(shape)
+
+    oriented = set()      # triangles already visited
+    flipped = {}          # face index -> True if it would need flipping
+    num_wrong = 0
+
+    for start_face in range(len(shape.F)):
+        if start_face in oriented:
+            continue
+
+        # Start of a new connected component: its orientation is the reference
+        oriented.add(start_face)
+        flipped[start_face] = False
+
+        component_size = 1
+        component_flips = 0
+        queue = [start_face]
+        head = 0
+
+        while head < len(queue):
+            current_index = queue[head]
+            head += 1
+            current_face = shape.F[current_index]
+
+            current_vertices = [corner[0] for corner in current_face]
+
+            # Use the effective orientation of the current face,
+            # i.e. what it would look like after the flips we'd have made
+            if flipped[current_index]:
+                current_vertices = current_vertices[::-1]
+
+            current_edges = [
+                (current_vertices[0], current_vertices[1]),
+                (current_vertices[1], current_vertices[2]),
+                (current_vertices[2], current_vertices[0]),
+            ]
+
+            for edge in current_edges:
+                for neighbour_index in edge_to_faces[edge_key(*edge)]:
+                    if neighbour_index == current_index:
+                        continue
+                    if neighbour_index in oriented:
+                        continue
+
+                    neighbour_face = shape.F[neighbour_index]
+                    neighbour_direction = get_shared_edge_direction(
+                        neighbour_face, edge
+                    )
+
+                    # Same direction on the shared edge -> inconsistent
+                    needs_flip = (neighbour_direction == edge)
+
+                    flipped[neighbour_index] = needs_flip
+                    if needs_flip:
+                        component_flips += 1
+
+                    oriented.add(neighbour_index)
+                    component_size += 1
+                    queue.append(neighbour_index)
+
+        # The reference triangle is arbitrary, so count the minority group
+        num_wrong += min(component_flips, component_size - component_flips)
+
+    return num_wrong == 0, f"triangles with wrong orientation={num_wrong}"
 
 
 if __name__ == "__main__":

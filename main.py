@@ -1,7 +1,7 @@
 from obj_viewer import display
 
 def main():
-    filename = r"ResampledShapeDatabase/AircraftBuoyant/m1348.obj"
+    filename = r"ResampledShapeDatabase/Apartment/D00651.obj"
     width, height = 900, 700
     display(filename, width, height)
 
