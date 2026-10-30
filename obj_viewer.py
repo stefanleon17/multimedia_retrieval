@@ -7,6 +7,8 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
 from shape import Shape
+from pathlib import Path
+from collections import Counter
 from Preprocessing.obj_resampler import resample
 from Preprocessing.obj_alignment import align
 from Preprocessing.obj_normalization import flip
@@ -70,6 +72,14 @@ def view(width, height, V, VN, F):
 def display(filename, width, height):
     shape = Shape(filename)
 
+    path = Path(shape.filename)
+    face_counts = Counter(len(face) for face in shape.F)
+
+    face_types = ", ".join(
+        "Triangles" if n == 3 else "Quads" if n == 4 else f"{n}-sided"
+        for n in sorted(face_counts)
+    )
+
     original_vertices = shape.V.copy()
     flipped_vertices = flip(
         shape.V,
@@ -112,7 +122,11 @@ def display(filename, width, height):
             -center[2]
         )
 
+        glDisable(GL_LIGHTING)
         draw_axes(size * 0.75)
+
+        if shape.VN:
+            glEnable(GL_LIGHTING)
 
         # Return color to the mesh color
         glColor3f(0.8, 0.8, 0.8)
@@ -176,7 +190,7 @@ def display(filename, width, height):
             glColor3f(1.0, 1.0, 1.0)
             glRasterPos2f(x, y)
             for ch in text:
-                glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
+                glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, ord(ch))
 
             if shape.VN:
                 glEnable(GL_LIGHTING)
@@ -187,13 +201,18 @@ def display(filename, width, height):
             glMatrixMode(GL_MODELVIEW)
             glPopMatrix()
 
-        draw_text(width - 150, 40, f"Vertices: {shape.num_vertices}")
-        draw_text(width - 150, 20, f"Faces: {shape.num_faces}")
+        draw_text(width - 200, 100, f"Filename: {path.name}")
+        draw_text(width - 200, 85, f"Class: {path.parent.name}")
+        draw_text(width - 200, 70, f"Vertices: {shape.num_vertices}")
+        draw_text(width - 200, 55, f"Faces: {shape.num_faces}")
+        draw_text(width - 200, 40, f"Face Type: {face_types}")
+        draw_text(width - 200, 25, f"AABB min: ({lo[0]:.2f}, {lo[1]:.2f}, {lo[2]:.2f})")
+        draw_text(width - 200, 10, f"AABB max: ({hi[0]:.2f}, {hi[1]:.2f}, {hi[2]:.2f})")
 
-        if show_flipped:
-            draw_text(20, height - 30, "after flipping")
-        else:
-            draw_text(20, height - 30, "before flipping")
+        # if show_flipped:
+        #     draw_text(20, height - 30, "after flipping")
+        # else:
+        #     draw_text(20, height - 30, "before flipping")
 
         glutSwapBuffers()
 
