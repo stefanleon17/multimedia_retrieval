@@ -92,9 +92,12 @@ def simplify_shape(shape, target=TARGET_VERTICES, tolerance=TOLERANCE, max_iters
     return shape
 
 
-def resample(input_path, target=TARGET_VERTICES, tolerance=TOLERANCE):
+def resample(input_path, target=TARGET_VERTICES, tolerance=TOLERANCE, max_iter = 10):
     """Standalone: clean + simplify + write. Kept for the viewer ('s' key)."""
     shape = Shape(str(input_path))
     shape = clean_shape(shape)
-    shape = simplify_shape(shape, target, tolerance)
+    iter = 0
+    while (shape.V > (target + tolerance) or shape.V < (target - tolerance)) and iter < max_iter:
+        shape = simplify_shape(shape, target, tolerance)
+        iter += 1
     return shape.write()

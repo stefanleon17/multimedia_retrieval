@@ -247,6 +247,9 @@ def main():
     failed_checks  = {}          # step_name -> count
 
     for i, f in enumerate(files, 1):
+        if (i < 2313):
+            continue
+        print(f"Processing {f}")
         rel = f.relative_to(PROJECT_ROOT)
         prefix = f"[{i:4d}/{n}]"
 
