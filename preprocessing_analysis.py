@@ -14,8 +14,8 @@ from pathlib import Path
 import pandas as pd
 
 STEP_ORDER = [
-    "0. load", "1. clean", "2. orient", "3. fill_holes", "4. align",
-    "5. flip", "6. scale", "7. ensure_outward", "8. simplify", "9. write",
+    "0. load", "1. clean", "2. align", "3. flip", "4. scale",
+    "5. ensure_outward", "6. simplify", "7. orient", "8. fill_holes", "9. write",
 ]
 ALL_STEPS = list(STEP_ORDER)
 LINE_RE = re.compile(r"^(?P<path>.+?\.obj) \u2014 FAILED: (?P<detail>.*)$")
