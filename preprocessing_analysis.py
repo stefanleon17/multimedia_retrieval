@@ -140,13 +140,45 @@ def build_long_table(inv: pd.DataFrame, fails: pd.DataFrame) -> pd.DataFrame:
                              key=lambda s: s.map(step_index) if s.name == "step" else s)
 
 
-def export_csvs(master: pd.DataFrame, long: pd.DataFrame, out: Path):
+def export_csvs(master: pd.DataFrame, long: pd.DataFrame, out: Path, totals = None):
     out.mkdir(exist_ok=True, parents=True)
     master.to_csv(out / "master.csv", index=False)
     long.to_csv(out / "failures_long.csv", index=False)
     print(f"Wrote {out / 'master.csv'} ({len(master)} rows, {master.shape[1]} cols)")
     print(f"Wrote {out / 'failures_long.csv'} ({len(long)} rows)\n")
+    if totals is not None:
+        totals.to_csv(out / "step_totals.csv", index=False)
 
+
+def step_totals(master: pd.DataFrame) -> pd.DataFrame:
+    """Total failures per step, with a TOTAL row.
+
+    failed    = shapes that failed the step
+    share_of_all_failures = this step's failures / total step-failures
+    TOTAL.failed = sum of failures across steps (a shape failing 3 steps counts 3x)
+    TOTAL.shapes_with_failure = unique shapes with >=1 failed step
+    """
+    rows = []
+    for step in STEP_ORDER:
+        col = f"fail_{short(step)}"
+        if col not in master.columns:
+            continue
+        si = step_index(step)
+        ev = int((master["crash_si"].isna() | (master["crash_si"] >= si)).sum())
+        nf = int(master[col].sum())
+        rows.append({"step": step, "evaluated": ev, "failed": nf,
+                     "fail_rate": nf / ev if ev else float("nan")})
+    t = pd.DataFrame(rows)
+    total = int(t["failed"].sum())
+    t["share_of_all_failures"] = t["failed"] / total if total else float("nan")
+    n_shapes_failed = int(master["any_fail"].sum())
+    t["shapes_with_failure"] = float("nan")
+    t.loc[len(t)] = {"step": "TOTAL", "evaluated": len(master), "failed": total,
+                     "fail_rate": float("nan"),
+                     "share_of_all_failures": 1.0 if total else float("nan"),
+                     "shapes_with_failure": n_shapes_failed}
+    t["shapes_with_failure"] = t["shapes_with_failure"].astype("Int64")
+    return t
 
 # ===========================================================================
 # Analysis from the master table only (works on a re-loaded CSV too)
@@ -177,6 +209,8 @@ def analyze_master(master: pd.DataFrame):
     """Console summary computed purely from the master table."""
     pd.set_option("display.width", 200, "display.max_rows", 200,
                   "display.max_columns", 30, "display.float_format", "{:.3f}".format)
+    print("=== MASTER: total failures per step ===")
+    print(step_totals(master).to_string(index=False), "\n")
     print("=== MASTER: per-step fail rate (ALL) ===")
     print(step_rates(master).to_string(index=False), "\n")
     print("=== MASTER: per-step fail rate by group ===")
@@ -330,8 +364,11 @@ def main():
 
     # --- master table (single source for CSV export and plots) -------------
     master = build_master_table(inv, fails)
+    totals = step_totals(master)
+    print("=== 0. Total failures per step ===")
+    print(totals.to_string(index=False), "\n")
     if a.csv:
-        export_csvs(master, build_long_table(inv, fails), out)
+        export_csvs(master, build_long_table(inv, fails), out, totals)
     if a.plots:
         make_plots(master, out)
 
@@ -385,7 +422,7 @@ def main():
     print("=== 2. Worst classes per step (top 8 by fail rate) ===")
     for step in STEP_ORDER:
         sub = per_class[per_class["step"] == step].sort_values(
-            ["fail_rate", "failed"], ascending=False).head(8)
+            ["fail_rate", "failed"], ascending=False)
         if len(sub):
             print(f"\n-- {step}")
             print(sub.drop(columns="step").to_string(index=False))
@@ -408,8 +445,8 @@ def main():
     # 4. Severity metrics for the failures
     print("=== 4. Severity (distribution among FAILING shapes) ===")
     sev_rows = []
-    for step, col in [("1. clean", "nonmanifold"), ("3. fill_holes", "boundary"),
-                      ("8. simplify", "boundary"), ("8. simplify", "verts")]:
+    for step, col in [("1. clean", "nonmanifold"), ("8. fill_holes", "boundary"),
+                      ("6. simplify", "boundary"), ("6. simplify", "verts")]:
         sub = fails[(fails["step"] == step) & fails[col].notna()]
         for gname, g in [("ALL", sub)] + list(sub.groupby("group")):
             if len(g):
@@ -440,7 +477,7 @@ def main():
     print(combos.head(15).to_string(), "\n")
 
     # 7. Simplify detail: vertex target hit vs boundary tolerance
-    simp = fails[fails["step"] == "8. simplify"]
+    simp = fails[fails["step"] == "6. simplify"]
     if len(simp):
         v_miss = simp["verts"].notna().sum()
         print("=== 7. Simplify failures ===")
