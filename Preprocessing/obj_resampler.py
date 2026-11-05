@@ -97,7 +97,7 @@ def resample(input_path, target=TARGET_VERTICES, tolerance=TOLERANCE, max_iter =
     shape = Shape(str(input_path))
     shape = clean_shape(shape)
     iter = 0
-    while (shape.V > (target + tolerance) or shape.V < (target - tolerance)) and iter < max_iter:
+    while (len(shape.V) > (target + tolerance) or len(shape.V) < (target - tolerance)) and iter < max_iter:
         shape = simplify_shape(shape, target, tolerance)
         iter += 1
     return shape.write()

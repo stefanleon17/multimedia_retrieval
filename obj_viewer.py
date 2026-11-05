@@ -166,7 +166,7 @@ def display(filename, width, height):
                 glBegin(GL_TRIANGLES)
 
                 for v, vn in face:
-                    glVertex3f(*vertices[v])
+                    glVertex3f(*shape.V[v])
 
                 glEnd()
 
