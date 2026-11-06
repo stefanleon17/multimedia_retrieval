@@ -1,3 +1,4 @@
+
 # FeatureExtraction/obj_histogram_utils.py
 
 from pathlib import Path
@@ -53,11 +54,9 @@ def plot_single_histogram(
         + bin_edges[1:]
     ) / 2
 
-    bin_widths = np.diff(
-        bin_edges
-    )
+    bin_widths = np.diff(bin_edges)
 
-    plt.figure()
+    plt.figure(figsize=(10, 6))
 
     plt.bar(
         bin_centers,
@@ -69,14 +68,16 @@ def plot_single_histogram(
     plt.xlabel(xlabel)
     plt.ylabel("Normalized frequency")
     plt.title(title)
-
+    plt.grid(alpha=0.3, axis="y")
+    plt.tight_layout()
     plt.show()
 
 
 def plot_multiple_histograms(
     results,
     title,
-    xlabel
+    xlabel,
+    obj_files=None
 ):
     """
     Plot multiple histograms as line charts.
@@ -85,26 +86,53 @@ def plot_multiple_histograms(
         list of (label, histogram, bin_edges)
     """
 
-    plt.figure()
+    fig, ax = plt.subplots(figsize=(10, 6))
 
     for label, histogram, bin_edges in results:
 
         bin_centers = (
-            bin_edges[:-1]
-            + bin_edges[1:]
+            bin_edges[:-1] + bin_edges[1:]
         ) / 2
 
-        plt.plot(
+        ax.plot(
             bin_centers,
             histogram,
             marker="o",
+            linewidth=2,
+            alpha=0.8,
             label=label
         )
 
-    plt.xlabel(xlabel)
-    plt.ylabel("Normalized frequency")
-    plt.title(title)
-    plt.legend()
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Normalized frequency")
+    ax.set_title(title)
+    ax.grid(alpha=0.3)
+
+    # Check whether all objects belong to the same class
+    show_legend = True
+
+    if obj_files is not None:
+        class_names = {
+            Path(path).parent.name
+            for path in obj_files
+        }
+
+        if len(class_names) == 1:
+            show_legend = False
+
+    # Show legend outside only for different classes
+    if show_legend:
+        ax.legend(
+            loc="upper left",
+            bbox_to_anchor=(1.02, 1),
+            borderaxespad=0
+        )
+
+        fig.subplots_adjust(right=0.72)
+
+    else:
+        fig.tight_layout()
+
     plt.show()
 
 
@@ -200,5 +228,6 @@ def test_histogram_descriptor(
         plot_multiple_histograms(
             results,
             f"{title} Comparison",
-            xlabel
+            xlabel,
+            obj_files=obj_files
         )

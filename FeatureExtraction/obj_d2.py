@@ -9,10 +9,6 @@ from FeatureExtraction.obj_mesh_utils import vertices_array
 NUM_SAMPLES = 100_000
 NUM_BINS = 10
 
-D2_MIN = 0.0
-D2_MAX = np.sqrt(3)
-
-
 def calculate_d2(shape):
     """
     Calculate the D2 descriptor.
@@ -22,7 +18,6 @@ def calculate_d2(shape):
     """
 
     vertices = vertices_array(shape)
-
     num_vertices = len(vertices)
 
     # Randomly select the first point.
@@ -34,52 +29,47 @@ def calculate_d2(shape):
 
     # Randomly select the second point.
     index2 = np.random.randint(
-        0,
-        num_vertices,
-        size=NUM_SAMPLES
+        0, num_vertices - 1, size=NUM_SAMPLES
     )
 
-    # Do not allow the same vertex
-    # to be selected twice in one pair.
-    same_indices = (
-        index1 == index2
-    )
-
-    while np.any(same_indices):
-
-        index2[same_indices] = np.random.randint(
-            0,
-            num_vertices,
-            size=np.sum(same_indices)
-        )
-
-        same_indices = (
-            index1 == index2
-        )
+    index2 += (index2 >= index1)
 
     point1 = vertices[index1]
     point2 = vertices[index2]
 
-    differences = (
-        point1
-        - point2
-    )
-
+    # Calculate Euclidean distances
     distances = np.linalg.norm(
-        differences,
+        point1 - point2,
         axis=1
     )
 
+    if not np.all(np.isfinite(distances)):
+        raise ValueError("D2 contains invalid distances")
+
+    # The maximum possible separation in a unit cube
+    max_distance = np.sqrt(3)
+
+    if np.any(distances > max_distance + 1e-10):
+        print(
+            f"Warning: D2 maximum {distances.max():.6f} "
+            f"exceeds expected {max_distance:.6f}"
+        )
+
+    # Normalize distances to [0, 1]
+    distances = np.clip(
+        distances / max_distance, 0, 1
+    )
+
+    # Construct histogram
     histogram, bin_edges = np.histogram(
         distances,
         bins=NUM_BINS,
-        range=(D2_MIN, D2_MAX)
+        range=(0, 1)
     )
 
-    histogram = (
-        histogram
-        / np.sum(histogram)
-    )
+    # Normalize histogram frequencies
+    histogram = histogram.astype(float)
+    histogram /= histogram.sum()
 
     return histogram, bin_edges
 
@@ -113,7 +103,7 @@ if __name__ == "__main__":
     test_d2([
         "../ResampledShapeDatabase/Car/m1487.obj",
         "../ResampledShapeDatabase/Car/m1490.obj",
-        "../ResampledShapeDatabase/AircraftBuoyant/m1337.obj"
+        "../ResampledShapeDatabase/Biplane/D00069.obj"
     ])
 
     # Whole class:

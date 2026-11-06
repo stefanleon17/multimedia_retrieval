@@ -41,7 +41,7 @@ def calculate_d1(shape):
     histogram, bin_edges = np.histogram(
         distances,
         bins=NUM_BINS,
-        range=(D1_MIN, D1_MAX)
+        range=(0, 1)
     )
 
     histogram = (
@@ -84,5 +84,5 @@ if __name__ == "__main__":
 
     # Example 3: all OBJ files in one class folder
     test_d1(
-        "../ResampledShapeDatabase/Car"
+        "../ResampledShapeDatabase/Jet"
     )
