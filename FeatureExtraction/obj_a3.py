@@ -6,7 +6,7 @@ from FeatureExtraction.obj_histogram_utils import (
 from FeatureExtraction.obj_mesh_utils import vertices_array
 
 
-NUM_SAMPLES = 40_000
+NUM_SAMPLES = 100_000
 NUM_BINS = 10
 
 

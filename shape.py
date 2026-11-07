@@ -2,6 +2,15 @@ from pathlib import Path
 import pymeshlab
 import numpy as np
 
+# convert invalid vertices into known nan
+def safe_float(value):
+    try:
+        return float(value)
+    except ValueError:
+        if "nan" in value.lower():
+            return float("nan")
+        raise
+
 class Shape:
     def __init__(self, filename, mesh_set = None):
         self.V = []
@@ -26,10 +35,10 @@ class Shape:
                 if not data or data[0] == '#':
                     continue
                 if data[0] == 'v':
-                    self.V.append(tuple(float(i) for i in data[1:4]))
+                    self.V.append(tuple(safe_float(i) for i in data[1:4]))
                     self.num_vertices += 1
                 elif data[0] == 'vn':
-                    self.VN.append(tuple(float(i) for i in data[1:4]))
+                    self.VN.append(tuple(safe_float(i) for i in data[1:4]))
                 elif data[0] == 'f':
                     face = []
                     for token in data[1:]:

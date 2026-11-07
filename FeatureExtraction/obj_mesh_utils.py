@@ -7,7 +7,21 @@ import numpy as np
 
 def vertices_array(shape):
     """(n, 3) array of the vertex positions."""
-    return np.asarray(shape.V, dtype=np.float64).reshape(-1, 3)
+    # return np.asarray(shape.V, dtype=np.float64).reshape(-1, 3)
+
+    vertices = np.asarray(shape.V, dtype=np.float64).reshape(-1, 3)
+
+    # Keep only vertices with valid
+    valid_vertices = np.isfinite(vertices).all(axis=1)
+
+    # invalid_count = np.count_nonzero(~valid_vertices)
+    #
+    # if invalid_count > 0:
+    #     print(f"Skipping {invalid_count} invalid vertices")
+
+    vertices = vertices[valid_vertices]
+
+    return vertices
 
 
 def triangles_array(shape):

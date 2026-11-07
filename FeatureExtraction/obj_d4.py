@@ -23,68 +23,86 @@ def calculate_d4(shape):
 
     vertices = vertices_array(shape)
 
-    num_vertices = len(vertices)
+    n_vertices = len(vertices)
 
-    # Generate random groups of four vertices.
-    indices = np.random.randint(
-        0,
-        num_vertices,
-        size=(NUM_SAMPLES, 4)
-    )
+    if n_vertices < 4:
+        raise ValueError("D4 requires at least 4 vertices")
 
-    # Do not allow duplicate vertices
-    # inside one tetrahedron.
-    valid = (
-        (indices[:, 0] != indices[:, 1])
-        & (indices[:, 0] != indices[:, 2])
-        & (indices[:, 0] != indices[:, 3])
-        & (indices[:, 1] != indices[:, 2])
-        & (indices[:, 1] != indices[:, 3])
-        & (indices[:, 2] != indices[:, 3])
-    )
+    if not np.isfinite(vertices).all():
+        raise ValueError("D4 contains invalid vertices")
 
-    indices = indices[valid]
+    histogram = np.zeros(NUM_BINS, dtype=np.int64)
+    bin_edges = np.linspace(0, 1, NUM_BINS + 1)
 
-    p1 = vertices[indices[:, 0]]
-    p2 = vertices[indices[:, 1]]
-    p3 = vertices[indices[:, 2]]
-    p4 = vertices[indices[:, 3]]
+    remaining = NUM_SAMPLES
 
-    vector1 = p2 - p1
-    vector2 = p3 - p1
-    vector3 = p4 - p1
+    while remaining > 0:
+        batch_size = min(remaining, 50_000)
 
-    # Cross product of two tetrahedron edges.
-    cross_products = np.cross(
-        vector2,
-        vector3
-    )
-
-    # Scalar triple product:
-    # |v1 · (v2 × v3)| / 6
-    volumes = np.abs(
-        np.einsum(
-            "ij,ij->i",
-            vector1,
-            cross_products
+        # Generate random vertex indices
+        indices = np.random.randint(
+            0, n_vertices, size=(batch_size, 4)
         )
-    ) / 6.0
 
-    # D4 uses cube root of tetrahedron volume.
-    d4_values = np.cbrt(
-        volumes
-    )
+        # Keep only triplets of four distinct indices
+        sorted_indices = np.sort(indices, axis=1)
 
-    histogram, bin_edges = np.histogram(
-        d4_values,
-        bins=NUM_BINS,
-        range=(D4_MIN, D4_MAX)
-    )
+        valid = np.all(
+            np.diff(sorted_indices, axis=1) != 0,
+            axis=1
+        )
 
-    histogram = (
-        histogram
-        / np.sum(histogram)
-    )
+        indices = indices[valid]
+
+        if len(indices) == 0:
+            continue
+
+        p1 = vertices[indices[:, 0]]
+        p2 = vertices[indices[:, 1]]
+        p3 = vertices[indices[:, 2]]
+        p4 = vertices[indices[:, 3]]
+
+        v1 = p2 - p1
+        v2 = p3 - p1
+        v3 = p4 - p1
+
+        # Calculate tetrahedron volume
+        cross = np.cross(v2, v3)
+
+        volumes = np.abs(
+            np.einsum("ij,ij->i", v1, cross)
+        ) / 6.0
+
+        # D4 = cube root of volume
+        d4_values = np.cbrt(volumes)
+
+        # Normalize with a shared fixed scale
+        normalized = d4_values / D4_MAX
+
+        if not np.isfinite(normalized).all():
+            raise ValueError("Invalid D4 measurements")
+        dimensions = np.ptp(vertices, axis=0)
+
+        print("AABB dimensions:", dimensions)
+        print("Maximum AABB dimension:", dimensions.max())
+        if np.any(normalized > 1 + 1e-9):
+            print(
+                "D4 exceeds unit-cube range. "
+                "Check mesh scaling."
+            )
+
+        normalized = np.minimum(normalized, 1.0)
+
+        counts, _ = np.histogram(
+            normalized,
+            bins=bin_edges
+        )
+
+        histogram += counts
+        remaining -= len(indices)
+
+    histogram = histogram.astype(float)
+    histogram /= histogram.sum()
 
     return histogram, bin_edges
 
