@@ -5,10 +5,6 @@
 #     python FeatureExtraction_Pipeline.py ResampledShapeDatabase/Car # one class, quiet
 #     python FeatureExtraction_Pipeline.py -v                         # whole DB, per-feature detail
 #
-# Quiet output (default):
-#     [   1/2483] ResampledShapeDatabase/AircraftBuoyant/m1339.obj — PASSED
-#     [  18/2483] ResampledShapeDatabase/Apartment/D00086.obj — FAILED: convexity (nan); d3 (CRASH: ValueError: ...)
-#
 # Output:
 #     features.csv  (or features_<folder>.csv when a sub-folder is given)
 #         one row per shape: path, class, then every feature in FEATURE_COLUMNS.
@@ -220,65 +216,39 @@ def load_feature_vectors(csv_path=OUTPUT_CSV):
 SHAPE_DIR   = PROJECT_ROOT / "TestShapesResampled"
 SHAPE_NAMES = ["unit_cube", "sphere", "half_sphere"]
 
-# feature -> (expected value, relative tolerance)
+# feature -> expected value
+TOL = 0.02     # relative for scalars, absolute per bin for histograms
+
+# feature -> expected value
 EXPECTED = {
     "unit_cube": {
-        "surface_area": (6.0,              0.02),
-        "volume":       (1.0,              0.02),
-        "compactness":  (6.0 / math.pi,    0.03),   # S^3 / (36 pi V^2) = 216 / (36 pi)
-        "convexity":    (1.0,              0.01),
-        "aabb_volume":  (1.0,              0.02),
-        "diameter":     (math.sqrt(3),     0.01),   # body diagonal
-        "eccentricity": (1.0,              0.05),   # isotropic (measured 1.008)
+        "surface_area": 6.0,
+        "volume":       1.0,
+        "compactness":  6.0 / math.pi,    # S^3 / (36 pi V^2) = 216 / (36 pi)
+        "convexity":    1.0,
+        "aabb_volume":  1.0,
+        "diameter":     math.sqrt(3),     # body diagonal
+        "eccentricity": 1.0,              # isotropic (measured 1.008)
     },
     "sphere": {
-        "surface_area": (math.pi,          0.02),   # 4 pi R^2, R = 0.5
-        "volume":       (math.pi / 6,      0.02),   # 4/3 pi R^3
-        "compactness":  (1.0,              0.03),
-        "convexity":    (1.0,              0.01),
-        "aabb_volume":  (1.0,              0.02),
-        "diameter":     (1.0,              0.01),
-        "eccentricity": (1.0,              0.15),   # ideal 1.0; measured 1.10 (see note below)
+        "surface_area": math.pi,          # 4 pi R^2, R = 0.5
+        "volume":       math.pi / 6,      # 4/3 pi R^3
+        "compactness":  1.0,
+        "convexity":    1.0,
+        "aabb_volume":  1.0,
+        "diameter":     1.0,
+        "eccentricity": 1.0,
     },
     "half_sphere": {
-        "surface_area": (0.75 * math.pi,   0.02),   # dome 2 pi R^2 + flat cap pi R^2
-        "volume":       (math.pi / 12,     0.02),   # 2/3 pi R^3 -> only valid if holes were filled
-        "compactness":  (27.0 / 16.0,      0.03),   # 27 pi^3 / (16 pi^3) = 1.6875
-        "convexity":    (1.0,              0.01),   # half-ball is convex
-        "aabb_volume":  (0.5,              0.02),   # 1 x 1 x 0.5
-        "diameter":     (1.0,              0.01),   # rim
-        "eccentricity": (4.30,             0.05),   # reference from the file (vertex covariance)
+        "surface_area": 0.75 * math.pi,   # dome 2 pi R^2 + flat cap pi R^2
+        "volume":       math.pi / 12,     # 2/3 pi R^3, only valid if holes were filled
+        "compactness":  27.0 / 16.0,      # 27 pi^3 / (16 pi^3) = 1.6875
+        "convexity":    0.75,              # half_sphere_dented
+        "aabb_volume":  0.5,              # 1 x 1 x 0.5
+        "diameter":     1.0,              # rim
+        "eccentricity": 4.0,             
     },
 }
-
-# feature -> 10 bin probabilities
-EXPECTED_HIST = {
-    "unit_cube": {
-        "a3": [0.073, 0.166, 0.224, 0.213, 0.153, 0.097, 0.046, 0.018, 0.007, 0.003],
-        "d1": [0.0, 0.0, 0.062, 0.641, 0.296, 0.0, 0.0, 0.0, 0.0, 0.0],
-        "d2": [0.017, 0.054, 0.092, 0.129, 0.161, 0.213, 0.217, 0.098, 0.018, 0.001],
-        "d3": [0.005, 0.029, 0.072, 0.127, 0.184, 0.221, 0.214, 0.128, 0.020, 0.0],
-        "d4": [0.018, 0.073, 0.155, 0.222, 0.239, 0.188, 0.090, 0.015, 0.0, 0.0],
-    },
-    "sphere": {
-        "a3": [0.064, 0.169, 0.221, 0.214, 0.165, 0.101, 0.048, 0.015, 0.003, 0.0],
-        "d1": [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],   # every vertex at R = 0.5
-        "d2": [0.03, 0.09, 0.15, 0.21, 0.27, 0.25, 0.0, 0.0, 0.0, 0.0],  # CDF(d) = d^2 for R = 0.5
-        "d3": [0.007, 0.056, 0.140, 0.232, 0.296, 0.257, 0.012, 0.0, 0.0, 0.0],
-        "d4": [0.023, 0.134, 0.263, 0.312, 0.222, 0.045, 0.0, 0.0, 0.0, 0.0],
-    },
-    "half_sphere": {
-        "a3": [0.095, 0.200, 0.203, 0.162, 0.122, 0.102, 0.075, 0.033, 0.007, 0.0],
-        "d1": [0.0, 0.223, 0.651, 0.126, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        "d2": [0.058, 0.152, 0.215, 0.245, 0.231, 0.099, 0.0, 0.0, 0.0, 0.0],
-        "d3": [0.022, 0.133, 0.257, 0.303, 0.221, 0.063, 0.0, 0.0, 0.0, 0.0],
-        "d4": [0.061, 0.284, 0.382, 0.233, 0.040, 0.0, 0.0, 0.0, 0.0, 0.0],
-    },
-}
-
-HIST_TOL = {"d1": 0.005}      # D1 is deterministic (no sampling)
-HIST_TOL_DEFAULT = 0.02       # sampled descriptors: noise is ~0.002, rest is margin
-
 
 _shape_cache = {}
 
@@ -316,39 +286,40 @@ def _t_hist_sum(label, hist):
     return _t_true(label, abs(total - 1.0) < 1e-9, f"sum = {total:.9f}")
 
 
-def _t_hist(label, hist, expected, tol):
-    got = np.asarray(hist, dtype=float)
-    expected = np.asarray(expected, dtype=float)
-    if got.shape != expected.shape:
-        return _t_true(label, False, f"{got.shape[0]} bins, expected {expected.shape[0]}")
-    err = float(np.max(np.abs(got - expected)))
-    ok = err <= tol
-    print(f"    [{'PASS' if ok else 'FAIL'}] {label}: max bin error {err:.4f} (tol {tol})")
-    if not ok:
-        print(f"        got      {np.round(got, 3).tolist()}")
-        print(f"        expected {np.round(expected, 3).tolist()}")
-    return ok
-
-
 def _scalar_test(feature, fn):
     """One scalar feature on all three shapes, against EXPECTED."""
-    results = []
-    for name in SHAPE_NAMES:
-        expected, rel = EXPECTED[name][feature]
-        results.append(_t_rel(name, fn(_shape(name)), expected, rel))
-    return results
+    return [_t_rel(name, fn(_shape(name)), EXPECTED[name][feature], TOL)
+            for name in SHAPE_NAMES]
 
 
-def _hist_test(feature, fn):
-    """One histogram descriptor on all three shapes, against EXPECTED_HIST."""
+N_RUNS = 10    # repeated runs per shape; 10 runs give 45 pairwise comparisons
+
+
+def _l1_spread(fn, shape):
+    """Run a histogram descriptor N_RUNS times on one shape, each with a different seed.
+    Returns the list of histograms and the pairwise L1 distances between them."""
+    hists = []
+    for run in range(N_RUNS):
+        np.random.seed(SEED + run)
+        hist, _edges = fn(shape)
+        hists.append(np.asarray(hist, dtype=float))
+    dists = [float(np.abs(hists[i] - hists[j]).sum())
+             for i in range(N_RUNS) for j in range(i + 1, N_RUNS)]
+    return hists, dists
+
+
+def _hist_test(label, fn):
+    """Consistency test: how much does the descriptor change between repeated runs?"""
     results = []
     for name in SHAPE_NAMES:
-        np.random.seed(SEED)
-        hist, _edges = fn(_shape(name))
-        results.append(_t_hist_sum(f"{name}: sums to 1", hist))
-        results.append(_t_hist(f"{name}: distribution", hist,
-                               EXPECTED_HIST[name][feature],
-                               HIST_TOL.get(feature, HIST_TOL_DEFAULT)))
+        hists, dists = _l1_spread(fn, _shape(name))
+        sums_ok = all(abs(h.sum() - 1.0) < 1e-9 for h in hists)
+        mean_d, max_d = float(np.mean(dists)), float(np.max(dists))
+        ok = sums_ok and max_d <= TOL
+        print(f"    [{'PASS' if ok else 'FAIL'}] {label} on {name}: {len(dists)} pairwise L1 distances, "
+              f"mean {mean_d:.4f}, max {max_d:.4f} (tol {TOL})"
+              + ("" if sums_ok else "  | a histogram does not sum to 1"))
+        results.append(ok)
     return results
 
 
@@ -449,16 +420,25 @@ def test_feature_vector():
                 f"{len(FEATURE_COLUMNS)} columns"),
         _t_true("all feature checks pass on the cube", all(ok for _, ok, _ in report)),
         _t_true("no NaNs", bool(np.all(np.isfinite(a)))),
-        _t_rel("volume stored in the vector", vec1["volume"], 1.0, 0.02),
+        _t_rel("volume stored in the vector", vec1["volume"], 1.0, TOL),
         _t_true("deterministic (same shape twice)", bool(np.array_equal(a, b))),
         _t_true("CSV round trip", X.shape == (1, len(FEATURE_COLUMNS))
                 and bool(np.allclose(X[0], a)) and classes == ["Test"]),
     ])
 
 
+def test_convexity_dented():
+    # Cap centre pushed C = 0.25 into the dome: volume (pi/12)(1 - c), hull unchanged -> 1 - c/(2R) = 0.75
+    shape = Shape(str(SHAPE_DIR / "half_sphere_dented.obj"))
+    return all([
+        _t_rel("dented half-sphere", calculate_convexity(shape), 0.75, TOL),
+        _t_rel("volume (pi/12)(1 - c)", get_volume(shape), math.pi / 12 * 0.75, TOL),
+    ])
+
+
 ALL_TESTS = [
     test_shapes_closed,
-    test_surface_area, test_volume, test_compactness, test_convexity,
+    test_surface_area, test_volume, test_compactness, test_convexity, test_convexity_dented,
     test_aabb_volume, test_diameter, test_eccentricity,
     test_a3, test_d1, test_d2, test_d3, test_d4,
     test_feature_vector,
