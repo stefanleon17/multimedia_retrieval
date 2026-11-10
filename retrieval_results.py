@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 from pathlib import Path
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -15,13 +16,6 @@ def draw_shape(ax, filename):
         dtype=int
     )
 
-    # Preview only: limit faces for responsive display
-    if len(faces) > 5000:
-        indices = np.linspace(
-            0, len(faces) - 1, 5000, dtype=int
-        )
-        faces = faces[indices]
-
     # Center and scale for visualization only
     center = (vertices.min(axis=0) + vertices.max(axis=0)) / 2
     vertices = vertices - center
@@ -32,9 +26,34 @@ def draw_shape(ax, filename):
 
     triangles = vertices[faces]
 
+    # Compute face normals
+    v1 = triangles[:, 1] - triangles[:, 0]
+    v2 = triangles[:, 2] - triangles[:, 0]
+    normals = np.cross(v1, v2)
+
+    lengths = np.linalg.norm(normals, axis=1)
+    valid = lengths > 1e-12
+    normals[valid] = normals[valid] / lengths[valid][:, None]
+
+    # Simple light direction
+    light_dir = np.array([1.0, 1.0, 1.0])
+    light_dir = light_dir / np.linalg.norm(light_dir)
+
+    # Brightness from dot product
+    brightness = normals @ light_dir
+    brightness = np.clip(brightness, 0, 1)
+
+    # Make it grey and still visible
+    brightness = 0.35 + 0.45 * brightness
+
+    facecolors = np.stack(
+        [brightness, brightness, brightness],
+        axis=1
+    )
+
     mesh = Poly3DCollection(
         triangles,
-        facecolor="black",
+        facecolors=facecolors,
         edgecolor="none"
     )
 
@@ -76,23 +95,36 @@ def show_results(query_path, results):
     plt.show()
 
 if __name__ == "__main__":
-    from pathlib import Path
+    from Matching.Matching import FeatureDatabase
 
-    database = Path("RescaledShapeDatabase")
+    if len(sys.argv) < 2:
+        raise ValueError("Please provide an OBJ file path")
 
-    # Find OBJ files from the database
-    files = sorted(database.glob("*/*.obj"))
+    query_path = sys.argv[1]
+    k = 5
 
-    if len(files) < 6:
-        raise ValueError("Need at least 6 OBJ files for testing")
+    database = FeatureDatabase("Matching/features.csv")
 
-    # First object as query
-    query = str(files[0])
+    query_idx = database.find_index(query_path)
 
-    # Five dummy retrieval results
-    results = [
-        (str(path), float(i + 1) / 10)
-        for i, path in enumerate(files[1:6])
-    ]
+    if query_idx is None:
+        raise ValueError(f"Query not found in feature database: {query_path}")
 
-    show_results(query, results)
+    # Retrieve more candidates to ensure we can exclude the query
+    ranked = database.retrieve(query_idx, k=k + 1)
+
+    results = []
+
+    for idx, distance in ranked:
+        if idx == query_idx:
+            continue
+
+        # Resolve path relative to project root
+        result_path = str(Path(database.paths[idx]))
+
+        results.append((result_path, distance))
+
+        if len(results) == k:
+            break
+
+    show_results(query_path, results)
