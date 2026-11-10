@@ -7,7 +7,7 @@ from FeatureExtraction.obj_mesh_utils import vertices_array
 
 
 NUM_SAMPLES = 100_000
-NUM_BINS = 10
+NUM_BINS = 25
 
 
 def calculate_angle(p1, p2, p3):

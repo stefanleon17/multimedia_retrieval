@@ -7,7 +7,7 @@ from shape import Shape
 from FeatureExtraction.obj_mesh_utils import vertices_array
 
 
-NUM_BINS = 10
+NUM_BINS = 25
 
 D1_MIN = 0.0
 D1_MAX = np.sqrt(3)
@@ -76,13 +76,13 @@ if __name__ == "__main__":
     # test_d1("../ResampledShapeDatabase/Car/m1487.obj")
 
     # Example 2: multiple OBJ files
-    # test_d1([
-    #     "../ResampledShapeDatabase/Car/m1487.obj",
-    #     "../ResampledShapeDatabase/Car/m1490.obj",
-    #     "../ResampledShapeDatabase/AircraftBuoyant/m1337.obj"
-    # ])
+    test_d1([
+        "../ResampledShapeDatabase/Car/m1487.obj",
+        "../ResampledShapeDatabase/Car/m1490.obj",
+        "../ResampledShapeDatabase/AircraftBuoyant/m1337.obj"
+    ])
 
     # Example 3: all OBJ files in one class folder
-    test_d1(
-        "../ResampledShapeDatabase/Jet"
-    )
+    # test_d1(
+    #     "../ResampledShapeDatabase/Jet"
+    # )

@@ -7,7 +7,7 @@ from FeatureExtraction.obj_mesh_utils import vertices_array
 
 
 NUM_SAMPLES = 100_000
-NUM_BINS = 10
+NUM_BINS = 25
 
 def calculate_d2(shape):
     """
@@ -100,13 +100,13 @@ if __name__ == "__main__":
     # )
 
     # Multiple OBJ files:
-    test_d2([
-        "../ResampledShapeDatabase/Car/m1487.obj",
-        "../ResampledShapeDatabase/Car/m1490.obj",
-        "../ResampledShapeDatabase/Biplane/D00069.obj"
-    ])
+    # test_d2([
+    #     "../ResampledShapeDatabase/Car/m1487.obj",
+    #     "../ResampledShapeDatabase/Car/m1490.obj",
+    #     "../ResampledShapeDatabase/Biplane/D00069.obj"
+    # ])
 
     # Whole class:
-    # test_d2(
-    #     "../ResampledShapeDatabase/Car"
-    # )
+    test_d2(
+        "../ResampledShapeDatabase/Car"
+    )

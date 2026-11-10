@@ -41,7 +41,7 @@ from FeatureExtraction.obj_d4 import calculate_d4, NUM_BINS as D4_BINS
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-INPUT_ROOT   = PROJECT_ROOT / "ResampledShapeDatabase"
+INPUT_ROOT   = PROJECT_ROOT / "RescaledShapeDatabase"
 OUTPUT_CSV   = PROJECT_ROOT / "features.csv"
 REPORT_FILE  = PROJECT_ROOT / "feature_report.txt"
 SEED         = 0          # histogram descriptors sample randomly; seeded per shape so runs repeat

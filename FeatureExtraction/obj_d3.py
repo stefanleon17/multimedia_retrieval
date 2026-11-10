@@ -7,7 +7,7 @@ from FeatureExtraction.obj_mesh_utils import vertices_array
 
 
 NUM_SAMPLES = 100_000
-NUM_BINS = 10
+NUM_BINS = 25
 
 D3_MIN = 0.0
 D3_MAX = np.sqrt(np.sqrt(3) / 2)
