@@ -251,6 +251,16 @@ def main():
         rel = f.relative_to(PROJECT_ROOT)
         prefix = f"[{i:4d}/{n}]"
 
+        to_process = (
+            Path("ShapeDatabase/PlantIndoors/D00080.obj"),
+            Path("ShapeDatabase/Skyscraper/D00058.obj"),
+            Path("ShapeDatabase/Tree/D00221.obj"),
+            Path("ShapeDatabase/Tree/D00223.obj"),
+        )
+
+        if rel not in to_process:
+            continue
+
         try:
             out, report = preprocess_one(f, verbose=verbose)
         except Exception as exc:

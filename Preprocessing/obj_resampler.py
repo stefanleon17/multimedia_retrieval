@@ -28,7 +28,10 @@ def clean_shape(shape):
     mesh.meshing_remove_duplicate_vertices()
     mesh.meshing_remove_duplicate_faces()
     mesh.meshing_remove_unreferenced_vertices()
-    mesh.meshing_repair_non_manifold_edges(method='Split Vertices')
+    try:
+        mesh.meshing_repair_non_manifold_edges(method='Split Vertices')
+    except pymeshlab.PyMeshLabException:
+        mesh.meshing_repair_non_manifold_edges(method='Remove Faces')
     mesh.meshing_repair_non_manifold_vertices()
     mesh.meshing_remove_unreferenced_vertices()
 

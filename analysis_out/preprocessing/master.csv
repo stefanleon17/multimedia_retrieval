@@ -1704,7 +1704,7 @@ ShapeDatabase/PianoBoard/D00962.obj,PianoBoard,D00962,(no VNs),0,False,,,,,False
 ShapeDatabase/PianoBoard/D00966.obj,PianoBoard,D00966,(no VNs),0,False,,,,,False,False,,
 ShapeDatabase/PlantIndoors/D00049.obj,PlantIndoors,D00049,(no VNs),1,True,6. simplify,,,,True,False,,13775.0
 ShapeDatabase/PlantIndoors/D00073.obj,PlantIndoors,D00073,(no VNs),0,False,,,,,False,False,,
-ShapeDatabase/PlantIndoors/D00080.obj,PlantIndoors,D00080,(no VNs),0,False,,,,,False,False,,
+ShapeDatabase/PlantIndoors/D00080.obj,PlantIndoors,D00080,(no VNs),1,True,6. simplify,,,,True,False,,61417.0
 ShapeDatabase/PlantIndoors/D00087.obj,PlantIndoors,D00087,(no VNs),0,False,,,,,False,False,,
 ShapeDatabase/PlantIndoors/D00128.obj,PlantIndoors,D00128,(no VNs),2,True,6. simplify|8. fill_holes,,,,True,True,50.0,13331.0
 ShapeDatabase/PlantIndoors/D00159.obj,PlantIndoors,D00159,(no VNs),2,True,6. simplify|8. fill_holes,,,,True,True,881.0,15252.0
@@ -2094,7 +2094,7 @@ ShapeDatabase/Sign/m1683.obj,Sign,m1683,(with VNs),0,False,,,,,False,False,,
 ShapeDatabase/Sign/m1684.obj,Sign,m1684,(with VNs),0,False,,,,,False,False,,
 ShapeDatabase/Sign/m1685.obj,Sign,m1685,(with VNs),0,False,,,,,False,False,,
 ShapeDatabase/Skyscraper/D00006.obj,Skyscraper,D00006,(no VNs),2,True,6. simplify|8. fill_holes,,,,True,True,4.0,38453.0
-ShapeDatabase/Skyscraper/D00058.obj,Skyscraper,D00058,(no VNs),0,False,,,,,False,False,,
+ShapeDatabase/Skyscraper/D00058.obj,Skyscraper,D00058,(no VNs),1,True,6. simplify,,,,True,False,,72872.0
 ShapeDatabase/Skyscraper/D00059.obj,Skyscraper,D00059,(no VNs),0,False,,,,,False,False,,
 ShapeDatabase/Skyscraper/D00105.obj,Skyscraper,D00105,(no VNs),1,True,8. fill_holes,,,,False,True,46.0,
 ShapeDatabase/Skyscraper/D00125.obj,Skyscraper,D00125,(no VNs),1,True,8. fill_holes,,,,False,True,52.0,
@@ -2313,8 +2313,8 @@ ShapeDatabase/Train/m1587.obj,Train,m1587,(with VNs),0,False,,,,,False,False,,
 ShapeDatabase/Train/m1588.obj,Train,m1588,(with VNs),0,False,,,,,False,False,,
 ShapeDatabase/Tree/D00096.obj,Tree,D00096,(no VNs),1,True,6. simplify,,,,True,False,,39227.0
 ShapeDatabase/Tree/D00200.obj,Tree,D00200,(no VNs),1,True,6. simplify,,,,True,False,,18729.0
-ShapeDatabase/Tree/D00221.obj,Tree,D00221,(no VNs),0,False,,,,,False,False,,
-ShapeDatabase/Tree/D00223.obj,Tree,D00223,(no VNs),0,False,,,,,False,False,,
+ShapeDatabase/Tree/D00221.obj,Tree,D00221,(no VNs),1,True,6. simplify,,,,True,False,,36186.0
+ShapeDatabase/Tree/D00223.obj,Tree,D00223,(no VNs),1,True,6. simplify,,,,True,False,,43199.0
 ShapeDatabase/Tree/D00367.obj,Tree,D00367,(no VNs),0,False,,,,,False,False,,
 ShapeDatabase/Tree/D00385.obj,Tree,D00385,(no VNs),1,True,8. fill_holes,,,,False,True,38.0,
 ShapeDatabase/Tree/D00393.obj,Tree,D00393,(no VNs),0,False,,,,,False,False,,

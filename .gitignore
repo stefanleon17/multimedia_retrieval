@@ -222,3 +222,7 @@ __marimo__/
 # Source .obj files
 ShapeDatabase/
 ResampledShapeDatabase/
+
+
+# PyCharm config
+.idea/multimedia_retrieval.iml
