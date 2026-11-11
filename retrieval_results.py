@@ -103,7 +103,7 @@ if __name__ == "__main__":
     query_path = sys.argv[1]
     k = 5
 
-    database = FeatureDatabase("Matching/features.csv")
+    database = FeatureDatabase("Matching/normalized_features.csv")
 
     query_idx = database.find_index(query_path)
 
