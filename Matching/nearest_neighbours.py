@@ -20,6 +20,7 @@
 import argparse
 import os.path
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -103,14 +104,19 @@ class ShapeIndex:
         return distances[:, k]  # column 0 is the item itself (distance 0)
 
     def evaluate_all(self, k=10, exact=False):
-        """Query every DB item (self excluded). Returns a list of index arrays."""
+        """Query every DB item (self excluded). Returns a list of index arrays.
+        Search time is stored in self.eval_time (seconds)."""
+        if not exact:
+            self.index.query(self.X[:1], k=k + 1)      # warm-up: first call triggers numba JIT
+        t0 = time.perf_counter()
         if exact:
             _, idx = self.nn.kneighbors(self.X, n_neighbors=k + 1)
         else:
             idx, _ = self.index.query(self.X, k=k + 1)
+        self.eval_time = time.perf_counter() - t0
         out = []
         for q, row in enumerate(idx):
-            out.append(row[(row != q) & (row >= 0)][:k])  # drop self and any -1 padding
+            out.append(row[(row != q) & (row >= 0)][:k])
         return out
 
 
@@ -192,7 +198,7 @@ def _find_index(paths, query_path):
             return idx
     return None
 
-def write_class_report(classes, retrieved, k, out_path, header=""):
+def write_class_report(classes, retrieved, k, out_path, header="", elapsed=None):
     """
     classes:   (n,) labels, one per DB item
     retrieved: list of index arrays, one per DB item (query excluded)
@@ -232,6 +238,9 @@ def write_class_report(classes, retrieved, k, out_path, header=""):
     lines += ["-" * 50,
               f"{'class mean (macro)':<24}{'':>6}{np.mean(list(P.values())):>11.4f}{np.mean(list(R.values())):>9.4f}",
               f"{'Mavg (all queries)':<24}{len(retrieved):>6}{P_avg:>11.4f}{R_avg:>9.4f}"]
+    if elapsed is not None:
+        lines += ["", f"Search time: {elapsed:.3f} s for {len(retrieved)} queries "
+                      f"= {elapsed / len(retrieved) * 1000:.3f} ms/query"]
     with open(out_path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
     print(f"Wrote per-class report to {out_path}")
@@ -284,7 +293,8 @@ def main():
         neigh = index.evaluate_all(k=k_eval, exact=args.exact)
         name = "Matching/nearest_neighbours_exact_report.txt" if args.exact else "Matching/nearest_neighbours_report.txt"
         write_class_report(classes, neigh, args.eval_k, name,
-                           header="Brute-force search" if args.exact else "ANN (pynndescent) search")
+                           header="Brute-force search" if args.exact else "ANN (pynndescent) search",
+                           elapsed=index.eval_time)
         return
 
     if args.tsne:

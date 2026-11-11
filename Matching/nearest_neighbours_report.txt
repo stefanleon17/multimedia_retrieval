@@ -75,3 +75,5 @@ WheelChair                  20     0.2526   0.2526
 --------------------------------------------------
 class mean (macro)                 0.1265   0.1265
 Mavg (all queries)        2473     0.1477   0.1477
+
+Search time: 0.127 s for 2473 queries = 0.051 ms/query

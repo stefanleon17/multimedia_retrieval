@@ -17,6 +17,7 @@
 #     (naming variants: a3_0..a3_24, a3_bin_0..a3_bin_24, a30..a324, a3[0]..a3[24])
 
 import argparse
+import time
 from pathlib import Path
 
 import numpy as np
@@ -272,9 +273,12 @@ class FeatureDatabase:
             blocks.append((vals * weights.get(f, 1.0) / self.dist_std[f])[:, None])
         for h, H in self.histograms.items():
             blocks.append(np.cumsum(H, axis=1) * (weights.get(h, 1.0) / (NUM_BINS * self.dist_std[h])))
+        t0 = time.perf_counter()
         D = pairwise_distances(np.hstack(blocks), metric="manhattan", n_jobs=-1)
-        np.fill_diagonal(D, np.inf)  # exclude the query itself
-        return list(np.argsort(D, axis=1)[:, :k])
+        np.fill_diagonal(D, np.inf)     # exclude the query itself
+        order = np.argsort(D, axis=1)[:, :k]
+        self.eval_time = time.perf_counter() - t0
+        return list(order)
 
 
 # ---------------------------------------------------------------------------
@@ -307,7 +311,7 @@ def print_results(db, query_idx, results, verbose=False):
 # CLI
 # ---------------------------------------------------------------------------
 
-def write_class_report(classes, retrieved, k, out_path, header=""):
+def write_class_report(classes, retrieved, k, out_path, header="", elapsed=None):
     """
     classes:   (n,) labels, one per DB item
     retrieved: list of index arrays, one per DB item (query excluded)
@@ -347,6 +351,9 @@ def write_class_report(classes, retrieved, k, out_path, header=""):
     lines += ["-" * 50,
               f"{'class mean (macro)':<24}{'':>6}{np.mean(list(P.values())):>11.4f}{np.mean(list(R.values())):>9.4f}",
               f"{'Mavg (all queries)':<24}{len(retrieved):>6}{P_avg:>11.4f}{R_avg:>9.4f}"]
+    if elapsed is not None:
+        lines += ["", f"Search time: {elapsed:.3f} s for {len(retrieved)} queries "
+                      f"= {elapsed / len(retrieved) * 1000:.3f} ms/query"]
     with open(out_path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
     print(f"Wrote per-class report to {out_path}")
@@ -377,7 +384,7 @@ def main():
         k_eval = int(np.unique(db.classes, return_counts=True)[1].max()) - 1
         neigh = db.evaluate_all(k=k_eval)
         write_class_report(db.classes, neigh, args.eval_k, "Matching/matching_report.txt",
-                           header="Exact search (matching.py)")
+                           header="Exact search (matching.py)", elapsed=db.eval_time)
         return
 
     if args.quick_eval:
