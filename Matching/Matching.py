@@ -24,7 +24,7 @@ import pandas as pd
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-FEATURES_CSV = "features.csv"
+FEATURES_CSV = "Matching/features.csv"
 DEFAULT_QUERY = "ResampledShapeDatabase/Tree/D00765.obj"   # <-- change to the shape you want
 
 NUM_BINS = 25
@@ -75,19 +75,6 @@ def _find_column(df, candidates):
     for c in candidates:
         if c in df.columns:
             return c
-    return None
-
-
-def _histogram_columns(df, name):
-    candidates = [
-        [f"{name}_{i}"      for i in range(NUM_BINS)],
-        [f"{name}_bin_{i}"  for i in range(NUM_BINS)],
-        [f"{name}{i}"       for i in range(NUM_BINS)],
-        [f"{name}[{i}]"     for i in range(NUM_BINS)],
-    ]
-    for cols in candidates:
-        if all(c in df.columns for c in cols):
-            return cols
     return None
 
 
@@ -142,15 +129,14 @@ class FeatureDatabase:
 
         self.histograms = {}
         for h in HISTOGRAM_FEATURES:
-            cols = _histogram_columns(df, h)
-            if cols is None:
+            cols = [f"{h}_{i}" for i in range(NUM_BINS)]
+            if not all(c in df.columns for c in cols):
                 if verbose:
                     print(f"  Warning: histogram '{h}' not in CSV, skipping")
                 continue
             H = df[cols].values.astype(float)
             row_sums = H.sum(axis=1, keepdims=True)
             row_sums[row_sums == 0] = 1.0
-            self.histograms[h] = H / row_sums
             self.histograms[h] = H / row_sums
 
         if verbose:
@@ -196,6 +182,26 @@ class FeatureDatabase:
             for k in self.dist_mean:
                 print(f"    {k:<15s}  mu={self.dist_mean[k]:.4f}  "
                       f"sd={self.dist_std[k]:.4f}")
+
+    def export_normalized(self, out_path="normalized_features.csv"):
+        """
+        Write the level-1 normalized feature table to CSV:
+          - globals: z-score standardized
+          - histograms: each histogram divided by its bin sum
+        """
+        out = pd.DataFrame()
+        out[self.path_col] = self.paths
+        out["class"] = self.classes
+
+        for f, vals in self.globals.items():
+            out[f] = vals
+
+        for h, H in self.histograms.items():
+            for b in range(NUM_BINS):
+                out[f"{h}_{b}"] = H[:, b]
+
+        out.to_csv(out_path, index=False)
+        print(f"Wrote {len(out)} normalized rows to {out_path}")
 
     # ------------------------------------------------------------------
 
@@ -296,9 +302,15 @@ def main():
                         help="show per-feature standardized distances")
     parser.add_argument("--quick-eval", action="store_true",
                         help="report leave-one-out top-1 accuracy for current weights")
+    parser.add_argument("--norm", action="store_true",
+                        help="write normalized_features.csv and exit")
     args = parser.parse_args()
 
     db = FeatureDatabase(FEATURES_CSV)
+    if args.norm:
+        db.export_normalized("Matching/normalized_features.csv")
+        if args.query is None and not args.quick_eval:
+            return
 
     if args.quick_eval:
         acc = db.top1_same_class()
