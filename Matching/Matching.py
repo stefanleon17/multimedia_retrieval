@@ -263,6 +263,19 @@ class FeatureDatabase:
                 correct += 1
         return correct / self.n
 
+    def evaluate_all(self, k=10, weights=None):
+        from sklearn.metrics import pairwise_distances
+        if weights is None:
+            weights = DEFAULT_WEIGHTS
+        blocks = []
+        for f, vals in self.globals.items():
+            blocks.append((vals * weights.get(f, 1.0) / self.dist_std[f])[:, None])
+        for h, H in self.histograms.items():
+            blocks.append(np.cumsum(H, axis=1) * (weights.get(h, 1.0) / (NUM_BINS * self.dist_std[h])))
+        D = pairwise_distances(np.hstack(blocks), metric="manhattan", n_jobs=-1)
+        np.fill_diagonal(D, np.inf)  # exclude the query itself
+        return list(np.argsort(D, axis=1)[:, :k])
+
 
 # ---------------------------------------------------------------------------
 # Output
@@ -294,6 +307,51 @@ def print_results(db, query_idx, results, verbose=False):
 # CLI
 # ---------------------------------------------------------------------------
 
+def write_class_report(classes, retrieved, k, out_path, header=""):
+    """
+    classes:   (n,) labels, one per DB item
+    retrieved: list of index arrays, one per DB item (query excluded)
+    k:         results per query. Ignored if per_class_n=True.
+    per_class_n: if True, each query uses n = K(C(Q)) - 1 results (R-precision).
+    Per query:  precision = hits / n,  recall = hits / (K(C) - 1)
+    M(C) = mean over the K(C) queries of class C;  Mavg = mean over all queries.
+    """
+    classes = np.asarray(classes)
+    labels, counts = np.unique(classes, return_counts=True)
+    K = dict(zip(labels, counts))
+    P = dict.fromkeys(labels, 0.0)
+    R = dict.fromkeys(labels, 0.0)
+    P_avg = R_avg = 0.0
+
+    for q, row in enumerate(retrieved):
+        c = classes[q]
+        n = K[c] - 1                                    # R-precision: n = K(C) - 1
+        row = np.asarray(row, dtype=int)[:n]
+        hits = int((classes[row] == c).sum())
+        p = hits / n if n > 0 else 0.0
+        r = hits / (K[c] - 1) if K[c] > 1 else 0.0
+        P[c] += p; R[c] += r                            # M(C(Q)) += M
+        P_avg += p; R_avg += r                          # Mavg += M
+
+    for c in labels:                                    # M(C) /= K(C)
+        P[c] /= K[c]; R[c] /= K[c]
+    P_avg /= len(retrieved)                             # Mavg /= |DB|
+    R_avg /= len(retrieved)
+
+    n_desc = "n = K(C)-1 per query (R-precision)"
+    lines = [header, f"{n_desc}; query excluded; metrics averaged per query, then per class", "",
+             f"{'class':<24}{'K(C)':>6}{'precision':>11}{'recall':>9}",
+             "-" * 50]
+    for c in labels:
+        lines.append(f"{c:<24}{K[c]:>6}{P[c]:>11.4f}{R[c]:>9.4f}")
+    lines += ["-" * 50,
+              f"{'class mean (macro)':<24}{'':>6}{np.mean(list(P.values())):>11.4f}{np.mean(list(R.values())):>9.4f}",
+              f"{'Mavg (all queries)':<24}{len(retrieved):>6}{P_avg:>11.4f}{R_avg:>9.4f}"]
+    with open(out_path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    print(f"Wrote per-class report to {out_path}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("query", nargs="?", help="OBJ path to query")
@@ -304,6 +362,9 @@ def main():
                         help="report leave-one-out top-1 accuracy for current weights")
     parser.add_argument("--norm", action="store_true",
                         help="write normalized_features.csv and exit")
+    parser.add_argument("--report", action="store_true",
+                        help="database-wide per-class precision/recall -> matching_report.txt")
+    parser.add_argument("--eval-k", type=int, default=10, help="k used by --report (default 10)")
     args = parser.parse_args()
 
     db = FeatureDatabase(FEATURES_CSV)
@@ -311,6 +372,13 @@ def main():
         db.export_normalized("Matching/normalized_features.csv")
         if args.query is None and not args.quick_eval:
             return
+
+    if args.report:
+        k_eval = int(np.unique(db.classes, return_counts=True)[1].max()) - 1
+        neigh = db.evaluate_all(k=k_eval)
+        write_class_report(db.classes, neigh, args.eval_k, "Matching/matching_report.txt",
+                           header="Exact search (matching.py)")
+        return
 
     if args.quick_eval:
         acc = db.top1_same_class()

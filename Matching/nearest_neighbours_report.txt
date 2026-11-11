@@ -1,0 +1,77 @@
+ANN (pynndescent) search
+n = K(C)-1 per query (R-precision); query excluded; metrics averaged per query, then per class
+
+class                     K(C)  precision   recall
+--------------------------------------------------
+AircraftBuoyant             16     0.1042   0.1042
+Apartment                   23     0.0553   0.0553
+AquaticAnimal               29     0.1293   0.1293
+Bed                         27     0.0840   0.0840
+Bicycle                     26     0.1908   0.1908
+Biplane                     43     0.1423   0.1423
+Bird                        44     0.1216   0.1216
+Bookset                     19     0.1199   0.1199
+Bottle                      31     0.1688   0.1688
+BuildingNonResidential      44     0.0571   0.0571
+Bus                         20     0.0632   0.0632
+Car                         89     0.2343   0.2343
+Cellphone                   20     0.0737   0.0737
+Chess                       42     0.2247   0.2247
+City                        27     0.0556   0.0556
+ClassicPiano                19     0.0380   0.0380
+Computer                    33     0.1080   0.1080
+ComputerKeyboard            20     0.1289   0.1289
+Cup                         30     0.1460   0.1460
+DeskLamp                    31     0.0677   0.0677
+DeskPhone                   20     0.0395   0.0395
+Door                        44     0.1036   0.1036
+Drum                        20     0.0895   0.0895
+Fish                        20     0.2395   0.2395
+FloorLamp                   28     0.0410   0.0410
+Glasses                     20     0.4079   0.4079
+Guitar                      20     0.0711   0.0711
+Gun                         58     0.0883   0.0883
+Hand                        37     0.1614   0.1614
+Hat                         15     0.1667   0.1667
+Helicopter                  51     0.1925   0.1925
+House                       46     0.0725   0.0725
+HumanHead                   51     0.3804   0.3804
+Humanoid                   142     0.2534   0.2534
+Insect                      65     0.1072   0.1072
+Jet                        141     0.2701   0.2701
+Knife                       27     0.1282   0.1282
+MilitaryVehicle             20     0.0816   0.0816
+Monitor                     20     0.0763   0.0763
+Monoplane                   20     0.0763   0.0763
+Motorcycle                  26     0.1277   0.1277
+Mug                         26     0.1338   0.1338
+MultiSeat                   45     0.0793   0.0793
+Musical_Instrument          21     0.0619   0.0619
+NonWheelChair               60     0.1463   0.1463
+PianoBoard                  20     0.0842   0.0842
+PlantIndoors                65     0.2281   0.2281
+PlantWildNonTree            27     0.0655   0.0655
+Quadruped                   57     0.1422   0.1422
+RectangleTable              64     0.0888   0.0888
+Rocket                      20     0.1474   0.1474
+RoundTable                  37     0.1036   0.1036
+Shelf                       43     0.2093   0.2093
+Ship                        63     0.1009   0.1009
+Sign                        15     0.0667   0.0667
+Skyscraper                  20     0.0684   0.0684
+Spoon                       19     0.1257   0.1257
+Starship                    31     0.0871   0.0871
+SubmachineGun               20     0.0789   0.0789
+Sword                       53     0.2453   0.2453
+Tool                        44     0.1559   0.1559
+Train                       30     0.0448   0.0448
+Tree                        47     0.1309   0.1309
+Truck                       26     0.0585   0.0585
+TruckNonContainer           19     0.1433   0.1433
+Vase                        20     0.0211   0.0211
+Violin                      20     0.1421   0.1421
+Wheel                       17     0.0257   0.0257
+WheelChair                  20     0.2526   0.2526
+--------------------------------------------------
+class mean (macro)                 0.1265   0.1265
+Mavg (all queries)        2473     0.1477   0.1477

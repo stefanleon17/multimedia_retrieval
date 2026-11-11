@@ -30,6 +30,7 @@ import plotly.express as px
 from pynndescent import NNDescent
 from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
+from sklearn.manifold import trustworthiness
 
 INDEX_CACHE = "Matching/ann_index.joblib"
 
@@ -101,6 +102,17 @@ class ShapeIndex:
         _, distances = self.index.query(self.X[rows], k=k + 1)
         return distances[:, k]  # column 0 is the item itself (distance 0)
 
+    def evaluate_all(self, k=10, exact=False):
+        """Query every DB item (self excluded). Returns a list of index arrays."""
+        if exact:
+            _, idx = self.nn.kneighbors(self.X, n_neighbors=k + 1)
+        else:
+            idx, _ = self.index.query(self.X, k=k + 1)
+        out = []
+        for q, row in enumerate(idx):
+            out.append(row[(row != q) & (row >= 0)][:k])  # drop self and any -1 padding
+        return out
+
 
 GLOBALS = ["surface_area", "compactness", "aabb_volume", "diameter",
            "eccentricity", "convexity", "volume"]
@@ -134,8 +146,10 @@ def load_features(csv_path="Matching/normalized_features.csv", scales_path="dist
 # --------------------------------------------------------------------------
 # t-SNE visualisation of how the classes cluster
 # --------------------------------------------------------------------------
-def embed_tsne(X, perplexity=30, seed=0):
+def embed_tsne(X, perplexity=20, seed=0):
     return TSNE(n_components=2, perplexity=perplexity, metric="manhattan",
+                init="pca", learning_rate="auto", early_exaggeration=24,
+                max_iter=2000,
                 random_state=seed, n_jobs=-1).fit_transform(X)
 
 def plot_tsne(emb, paths, classes, save_path="tsne.html"):
@@ -145,7 +159,7 @@ def plot_tsne(emb, paths, classes, save_path="tsne.html"):
     fig.update_traces(marker_size=5)
     fig.update_layout(legend=dict(orientation="h", yanchor="top", y=-0.12, xanchor="left",
                                   x=0, entrywidth=0.15, entrywidthmode="fraction", font=dict(size=10)),
-                      width=1000, height=1000)
+                      width=1050, height=1050)
 
     # Interactive HTML
     fig.write_html(save_path)
@@ -178,6 +192,50 @@ def _find_index(paths, query_path):
             return idx
     return None
 
+def write_class_report(classes, retrieved, k, out_path, header=""):
+    """
+    classes:   (n,) labels, one per DB item
+    retrieved: list of index arrays, one per DB item (query excluded)
+    k:         results per query. Ignored if per_class_n=True.
+    per_class_n: if True, each query uses n = K(C(Q)) - 1 results (R-precision).
+    Per query:  precision = hits / n,  recall = hits / (K(C) - 1)
+    M(C) = mean over the K(C) queries of class C;  Mavg = mean over all queries.
+    """
+    classes = np.asarray(classes)
+    labels, counts = np.unique(classes, return_counts=True)
+    K = dict(zip(labels, counts))
+    P = dict.fromkeys(labels, 0.0)
+    R = dict.fromkeys(labels, 0.0)
+    P_avg = R_avg = 0.0
+
+    for q, row in enumerate(retrieved):
+        c = classes[q]
+        n = K[c] - 1                                    # R-precision: n = K(C) - 1
+        row = np.asarray(row, dtype=int)[:n]
+        hits = int((classes[row] == c).sum())
+        p = hits / n if n > 0 else 0.0
+        r = hits / (K[c] - 1) if K[c] > 1 else 0.0
+        P[c] += p; R[c] += r                            # M(C(Q)) += M
+        P_avg += p; R_avg += r                          # Mavg += M
+
+    for c in labels:                                    # M(C) /= K(C)
+        P[c] /= K[c]; R[c] /= K[c]
+    P_avg /= len(retrieved)                             # Mavg /= |DB|
+    R_avg /= len(retrieved)
+
+    n_desc = "n = K(C)-1 per query (R-precision)"
+    lines = [header, f"{n_desc}; query excluded; metrics averaged per query, then per class", "",
+             f"{'class':<24}{'K(C)':>6}{'precision':>11}{'recall':>9}",
+             "-" * 50]
+    for c in labels:
+        lines.append(f"{c:<24}{K[c]:>6}{P[c]:>11.4f}{R[c]:>9.4f}")
+    lines += ["-" * 50,
+              f"{'class mean (macro)':<24}{'':>6}{np.mean(list(P.values())):>11.4f}{np.mean(list(R.values())):>9.4f}",
+              f"{'Mavg (all queries)':<24}{len(retrieved):>6}{P_avg:>11.4f}{R_avg:>9.4f}"]
+    with open(out_path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    print(f"Wrote per-class report to {out_path}")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -200,6 +258,15 @@ def main():
         "--rebuild", action="store_true",
         help="Force a full rebuild of the ANN index (ignores cache).",
     )
+    parser.add_argument(
+        "--report", action="store_true",
+        help="database-wide per-class precision/recall -> nearest_neighbours_report.txt")
+    parser.add_argument(
+        "--eval-k", type=int, default=10,
+        help="k used by --report (default 10)")
+    parser.add_argument(
+        "--exact", action="store_true",
+        help="with --report: use brute-force instead of ANN (to compare)")
     args = parser.parse_args()
 
     csv_path = "Matching/normalized_features.csv"
@@ -211,8 +278,20 @@ def main():
     paths, classes, X, scale = load_features(csv_path)
     index = ShapeIndex(X, paths, classes, scale, force_rebuild=force_rebuild)
 
+    # right after `index = ShapeIndex(...)`, before the `if args.tsne:` block:
+    if args.report:
+        k_eval = int(np.unique(classes, return_counts=True)[1].max()) - 1
+        neigh = index.evaluate_all(k=k_eval, exact=args.exact)
+        name = "Matching/nearest_neighbours_exact_report.txt" if args.exact else "Matching/nearest_neighbours_report.txt"
+        write_class_report(classes, neigh, args.eval_k, name,
+                           header="Brute-force search" if args.exact else "ANN (pynndescent) search")
+        return
+
     if args.tsne:
-        plot_tsne(embed_tsne(index.X), paths, classes)
+        emb = embed_tsne(index.X)
+        score = trustworthiness(index.X, emb, n_neighbors=10, metric="manhattan")
+        print(f"t-SNE trustworthiness (k=10, manhattan): {score:.4f}")
+        plot_tsne(emb, paths, classes)
         return
 
     # ---- resolve query -------------------------------------------------------
